@@ -1,6 +1,6 @@
 """Entry point for sfm."""
 
-from .cli import main  # pragma: no cover
+from sfm import main  # pragma: no cover
 
 if __name__ == "__main__":  # pragma: no cover
     main()
