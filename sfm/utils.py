@@ -8,7 +8,7 @@ def readImages(dir):
     imgs = []
     for i in sorted(os.listdir(dir)):
         img =  cv.imread(os.path.join(dir, i))
-        img = cv.resize(img, (800,600))
+        img = cv.resize(img, (1200, 800))
         imgs.append(np.asarray(img))
     return np.asarray(imgs)
 
@@ -23,5 +23,5 @@ def showFeatures(kps, imgs):
     plt.imshow(img2), plt.show()
 
 def showMatches(img1, img2, kp1, kp2, matches):
-    img3 = cv.drawMatches(img1, kp1, img2, kp2, matches[:10], None, flags = cv.DrawMatchesFlags_DEFAULT)
+    img3 = cv.drawMatches(img1, kp1, img2, kp2, matches[:20], None, flags = cv.DrawMatchesFlags_DEFAULT)
     plt.imshow(img3), plt.show()

@@ -3,7 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def parameters(imgs):
+
+    #board size
     CHECKERBOARD = (7,10)
+
+    #termination
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
  
     # Creating vector to store vectors of 3D points for each checkerboard image
@@ -38,8 +42,7 @@ def parameters(imgs):
             imgpoints.append(corners2)
  
             # Draw and display the corners
-            img = cv.drawChessboardCorners(i, CHECKERBOARD, corners2, ret)
-     
+            img = cv.drawChessboardCorners(i, CHECKERBOARD, corners2, ret) 
         cv.imshow('img',img)
         cv.waitKey(0)
  
