@@ -91,3 +91,10 @@ def imgC():
     ax.set_ylim(-10,10)
     ax.set_zlim(0,10)
     plt.show()
+
+## uncomment functions to show plots
+def visualize():
+    #dspace()
+    #worldC()
+    #camC()
+    imgC()
