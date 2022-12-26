@@ -1,13 +1,16 @@
 
 from utils import readImages, showImage, showFeatures, showMatches
-from visualization import dspace
+from visualization import dspace, worldC, camC, imgC
 from feature_detection import orb
 from feature_matching import bfMatch
 from camera_calibration import parameters
 
 def main():  # pragma: no cover
 
-    dspace()
+    #dspace()
+    #worldC()
+    #camC()
+    imgC()
     ## camera calibration
     #dir = "images/calibration_images"
     #calibration_images = readImages(dir)
