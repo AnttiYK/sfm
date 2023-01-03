@@ -7,8 +7,7 @@ from camera_calibration import parameters
 
 def main():  # pragma: no cover
 
-    ## visualize needed plots
-    visualize()
+    
 
     ## camera calibration
     #dir = "images/calibration_images"
@@ -17,9 +16,12 @@ def main():  # pragma: no cover
 
 
     ## read images
-    #dir = "images/boat_images"
-    #images = readImages(dir)
+    dir = "images/boat_images"
+    images = readImages(dir)
     #showImage(images[0])
+
+    ## visualize needed plots
+    visualize(images)
 
     ## feature detection
     ## orb[i] = [kp, des]

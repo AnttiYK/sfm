@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
-import numpy as np
+import cv2 as cv
 
 ## shows point in 2d and 3d space 
 def dspace():
@@ -114,9 +114,21 @@ def imgC():
     ax.set_zlim(0,10)
     plt.show()
 
+def image(img):
+    fig, ax = plt.subplots()
+    plt.axis([0,1200, 0, 800])
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    plt.gca().invert_yaxis()
+    plt.imshow(gray, cmap='gray')
+    ax.xaxis.tick_top()
+    
+    plt.show()
+
 ## uncomment functions to show plots
-def visualize():
+def visualize(images):
+    img = images[0]
     #dspace()
     #worldC()
     #camC()
-    imgC()
+    #imgC()
+    image(img)
