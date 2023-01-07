@@ -121,8 +121,18 @@ def image(img):
     plt.gca().invert_yaxis()
     plt.imshow(gray, cmap='gray')
     ax.xaxis.tick_top()
-    
     plt.show()
+
+def subImage(img):
+    fig, ax = plt.subplots()
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    ax.matshow(gray[0:5, 0:5], cmap = 'Greys')
+    for i in range(5):
+        for j in range(5):
+            c = gray[j,i]
+            ax.text(i, j, str(c))
+    plt.show()
+    
 
 ## uncomment functions to show plots
 def visualize(images):
@@ -131,4 +141,5 @@ def visualize(images):
     #worldC()
     #camC()
     #imgC()
-    image(img)
+    #image(img)
+    subImage(img)
