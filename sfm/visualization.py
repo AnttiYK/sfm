@@ -132,6 +132,55 @@ def subImage(img):
             c = gray[j,i]
             ax.text(i, j, str(c))
     plt.show()
+
+def binocularD():
+    fig, ax = plt.subplots()
+    ##hide grid and frames
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ## left camera center line
+    plt.plot((1,1), (1,5), color = 'black')
+    ## right camera center line
+    plt.plot((5,5), (1,5), color = 'black')
+    ##T
+    plt.plot((1,5), (1,1), color = 'black', linestyle = 'dashed')
+    ax.text(3, 1.2, 'T')
+    ##left camera
+    plt.plot(1,2, marker = 'x', color = 'black' )
+    ax.text(0.8, 2.1, 'Cl')
+    ##right camera
+    plt.plot(5, 2, marker = 'x', color = 'black')
+    ax.text(5.2, 2.1, 'Cr')
+    ##left image
+    plt.plot((0,2), (2.5,2.5), color = 'blue')
+    ##right image
+    plt.plot((4,6), (2.5, 2.5), color = 'blue')
+    ##f
+    plt.plot((0, 5), (2,2), color = 'black')
+    plt.plot((0.25, 0.25), (2, 2.5), color = 'black', linestyle = 'dashed')
+    ax.text(0, 2.25, 'f')
+    ##P
+    plt.plot(3, 5, marker = 'x', color = 'black')
+    ax.text(3, 5.25, 'P')
+    ##P to Cl
+    plt.plot((1,3), (2,5), color = 'blue', linestyle = 'dashed')
+    ##P to Cr
+    plt.plot((5,3), (2,5), color = 'blue', linestyle = 'dashed')
+    ##X left
+    plt.plot(1.3, 2.5, marker = 'o', color = 'blue')
+    ax.text(1.2, 2.6, 'Xl')
+    ##X right
+    plt.plot(4.7, 2.5, marker = 'o', color = 'blue')
+    ax.text(4.6, 2.6, 'Xr')
+    ##Z
+    plt.plot((3,3), (2, 5), color = 'black', linestyle = 'dashed')
+    ax.text(3.2, 3.5, 'Z')
+    plt.show()
     
 
 ## uncomment functions to show plots
@@ -142,4 +191,5 @@ def visualize(images):
     #camC()
     #imgC()
     #image(img)
-    subImage(img)
+    #subImage(img)
+    binocularD()
