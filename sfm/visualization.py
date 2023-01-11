@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
+import matplotlib.patches as mpatches
 import cv2 as cv
 
 ## shows point in 2d and 3d space 
@@ -181,6 +182,54 @@ def binocularD():
     plt.plot((3,3), (2, 5), color = 'black', linestyle = 'dashed')
     ax.text(3.2, 3.5, 'Z')
     plt.show()
+
+def motionParallax():
+    fig, ax = plt.subplots()
+    ##hide grid and frames
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ##left camera
+    plt.plot(1, 1, marker = 'x', color = 'black')
+    ax.text(0.8, 1, 'Cl')
+    ##right camera
+    plt.plot(5, 1, marker = 'x', color = 'black')
+    ax.text(5.2, 1, 'Cr')
+    ##point A
+    plt.plot(1, 5, marker = 'o', color = 'blue')
+    ax.text(1, 5.2, 'A1', color = 'blue')
+    plt.plot(3, 5, marker = 'o', color = 'blue')
+    ax.text(3, 5.2, 'A2', color = 'blue')
+    plt.plot((1,3), (5,5), color = 'blue', linestyle = 'dashed')
+    ##point B
+    plt.plot(1, 4, marker = 'o', color = 'red')
+    ax.text(1, 4.2, 'B1', color = 'red')
+    plt.plot(3, 4, marker = 'o', color = 'red')
+    ax.text(3, 4.2, 'A2', color = 'red')
+    plt.plot((1, 3), (4, 4), color = 'red', linestyle = 'dashed')
+    ##Z
+    plt.plot((0.2, 0.2), (1,5), color = 'black', linestyle = 'dashed')
+    ax.text(0.3, 3, 'Z', color = 'black')
+    plt.plot((0.2, 5.5), (1, 1), color = 'black', linestyle = 'dotted')
+    plt.plot((0.3, 0.3), (4, 5), color = 'black', linestyle = 'dashed')
+    ax.text(0.4, 4.5, 'dZ', color = 'black')
+    ##left camera to A
+    plt.plot((1, 1), (0.5, 5), color = 'black')
+    plt.plot((1,3), (1, 5), color = 'blue')
+    ##left camera to B2
+    plt.plot((1, 3), (1, 4), color = 'red')
+    ##right camera to A2
+    plt.plot((5, 3), (1, 5), color = 'blue')
+    ##right camera to B2
+    plt.plot((5, 3), (1, 4), color = 'red')
+    ##O arc
+    oarc = mpatches.Arc((2, 2), 2, 1)
+    ax.add_patch(oarc)
+    plt.show()
     
 
 ## uncomment functions to show plots
@@ -192,4 +241,5 @@ def visualize(images):
     #imgC()
     #image(img)
     #subImage(img)
-    binocularD()
+    #binocularD()
+    motionParallax()
