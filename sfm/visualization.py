@@ -272,6 +272,58 @@ def sphere23D():
     bx.add_patch(c)
     plt.show()
 
+## visualization of shape from silhouette
+def silhouette():
+    fig = plt.figure()
+    ax = fig.add_subplot(1,2,1, projection='3d')
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+    ##P1
+    plt.plot(1, 5, 5, marker = 'o', color = 'black')
+    ax.text(1,5,5.2, 'P1')
+    ##image plane for P1
+    p1Plane = plt.Rectangle((3 , 3), 4, 4, fc=(0, 0, 1, 0.2))
+    ax.add_patch(p1Plane)
+    art3d.patch_2d_to_3d(p1Plane, z= 3, zdir='x')
+    ##shape on P1 image plane
+    p1Shape = plt.Rectangle((4, 4), 2, 2, fc = (0, 0, 1, 1))
+    ax.add_patch(p1Shape)
+    art3d.patch_2d_to_3d(p1Shape, z = 3, zdir='x')
+    ##P1 cone
+    plt.plot((1, 10), (5,1), (5, 10), color = 'black') 
+    plt.plot((1, 10), (5, 9), (5, 10), color = 'black')
+    plt.plot((1, 10), (5, 1), (5, 1), color = 'black')
+    plt.plot((1, 10), (5, 9), (5, 1), color = 'black')
+    ##P1 projection
+    p1Projection = plt.Rectangle((2.7, 2.7), 4.5, 5, fc = (1, 0, 0, 0.2))
+    ax.add_patch(p1Projection)
+    art3d.patch_2d_to_3d(p1Projection, z = 6, zdir= 'x')
+    ##P2
+    plt.plot(8, 14, 5, marker = 'o', color = 'black')
+    ax.text(8, 14, 5.2, 'P2')
+    ##image plane for P2
+    p2Plane = plt.Rectangle((6 , 3), 4, 4, fc=(0, 0, 1, 0.2))
+    ax.add_patch(p2Plane)
+    art3d.patch_2d_to_3d(p2Plane, z= 12, zdir='y')
+    ##shape on P2 image plane
+    p2Shape = plt.Rectangle((7, 4), 2, 2, fc = (0, 0, 1, 1))
+    ax.add_patch(p2Shape)
+    art3d.patch_2d_to_3d(p2Shape, z = 12, zdir='y')
+    ##P2 cone
+    plt.plot((8, 3.7), (14, 4), (5, 9.2), color = 'black')
+    plt.plot((8, 3.7), (14, 4), (5, 1.2), color = 'black')
+    plt.plot((8, 12.3), (14, 4), (5, 9.2), color = 'black')
+    plt.plot((8, 12.3), (14, 4), (5, 1.2), color = 'black')
+    ##P2 projection
+    p2Projection = plt.Rectangle((6, 2.7), 5, 5.2, fc = (1, 0, 0, 0.2))
+    ax.add_patch(p2Projection)
+    art3d.patch_2d_to_3d(p2Projection, z = 7.2, zdir= 'y')
+    ##limits
+    ax.set_xlim(0, 15)
+    ax.set_ylim(0, 15)
+    ax.set_zlim(0, 10)
+    plt.show()
 
 '''
 uncomment to show plot
@@ -284,6 +336,7 @@ subimage = colormap representation of img with color values
 binocularD = binocular disparity visualization
 motionParallax = motion parallax visualization
 sphere23D = 2 and 3D representations of sphere
+silhouette = shape from silhouette visualization
 '''
 def visualize(images):
     img = images[0]
@@ -295,4 +348,5 @@ def visualize(images):
     #subImage(img)
     #binocularD()
     #motionParallax()
-    sphere23D()
+    #sphere23D()
+    silhouette()
