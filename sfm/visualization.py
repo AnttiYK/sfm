@@ -273,7 +273,7 @@ def sphere23D():
     plt.show()
 
 ## visualization of shape from silhouette
-def silhouette():
+def shapeFromSilhouette():
     fig = plt.figure()
     ax = fig.add_subplot(1,2,1, projection='3d')
     ax.set_xlabel("x")
@@ -325,6 +325,18 @@ def silhouette():
     ax.set_zlim(0, 10)
     plt.show()
 
+def silhouette(img):
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 2, 1)
+    plt.imshow(gray, cmap = 'Greys')
+    ax = fig.add_subplot(1,2,2)
+    estimatedThreshold, thresholdImage=cv.threshold(gray,90,255,cv.THRESH_BINARY) 
+    plt.imshow(thresholdImage, cmap = 'Greys')
+    plt.show()
+
+
 '''
 uncomment to show plot
 dspace = point in 2 and 3 dimensional space
@@ -336,7 +348,8 @@ subimage = colormap representation of img with color values
 binocularD = binocular disparity visualization
 motionParallax = motion parallax visualization
 sphere23D = 2 and 3D representations of sphere
-silhouette = shape from silhouette visualization
+shapeFromSilhouette = shape from silhouette visualization
+silhouette = displays silhouette of object
 '''
 def visualize(images):
     img = images[0]
@@ -349,4 +362,5 @@ def visualize(images):
     #binocularD()
     #motionParallax()
     #sphere23D()
-    silhouette()
+    #shapeFromSilhouette()
+    silhouette(img)
