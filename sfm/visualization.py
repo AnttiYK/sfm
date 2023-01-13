@@ -3,6 +3,12 @@ from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
 import matplotlib.patches as mpatches
 import cv2 as cv
+import numpy as np
+
+'''
+Visualizations used in thesis
+uncomment lines at visualize function at bottom to display plots
+'''
 
 ## shows point in 2d and 3d space 
 def dspace():
@@ -71,6 +77,7 @@ def camC():
     ax.set_zlim(0,10)
     plt.show()
 
+## shows point in image coordinates
 def imgC():
     fig = plt.figure()
     ax = fig.add_subplot(1,2,1, projection='3d')
@@ -115,6 +122,7 @@ def imgC():
     ax.set_zlim(0,10)
     plt.show()
 
+## shows grayscale image determined in visualize
 def image(img):
     fig, ax = plt.subplots()
     plt.axis([0,1200, 0, 800])
@@ -124,6 +132,7 @@ def image(img):
     ax.xaxis.tick_top()
     plt.show()
 
+## shows colormap representation of part of image
 def subImage(img):
     fig, ax = plt.subplots()
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -134,6 +143,7 @@ def subImage(img):
             ax.text(i, j, str(c))
     plt.show()
 
+## visualization of binocular disparity
 def binocularD():
     fig, ax = plt.subplots()
     ##hide grid and frames
@@ -183,6 +193,7 @@ def binocularD():
     ax.text(3.2, 3.5, 'Z')
     plt.show()
 
+## visualization of motion parallax
 def motionParallax():
     fig, ax = plt.subplots()
     ##hide grid and frames
@@ -209,7 +220,7 @@ def motionParallax():
     plt.plot(1, 4, marker = 'o', color = 'red')
     ax.text(1, 4.2, 'B1', color = 'red')
     plt.plot(3, 4, marker = 'o', color = 'red')
-    ax.text(3, 4.2, 'A2', color = 'red')
+    ax.text(3, 4.1, 'B2', color = 'red')
     plt.plot((1, 3), (4, 4), color = 'red', linestyle = 'dashed')
     ##Z
     plt.plot((0.2, 0.2), (1,5), color = 'black', linestyle = 'dashed')
@@ -226,13 +237,54 @@ def motionParallax():
     plt.plot((5, 3), (1, 5), color = 'blue')
     ##right camera to B2
     plt.plot((5, 3), (1, 4), color = 'red')
-    ##O arc
-    oarc = mpatches.Arc((2, 2), 2, 1)
-    ax.add_patch(oarc)
+    ##a arc
+    aarc = mpatches.Arc((1, 1), 1, 1, theta1 = 62, theta2 = 90)
+    ax.add_patch(aarc)
+    ax.text(1.1, 1.6, "$\u03B1$")
+    ##theta arcs
+    tarc1 = mpatches.Arc((1.5, 2), 1, 1, theta1 = 40, theta2 = 65)
+    ax.add_patch(tarc1)
+    ax.text(1.85, 2.5, '$\\theta$')
+    tarc2 = mpatches.Arc((4.5, 2), 1, 1, theta1 = 118, theta2 = 140)
+    ax.add_patch(tarc2)
+    ##dA arc
+    daarc = mpatches.Arc((3, 5), 1, 1, theta1 = 242, theta2 = 295)
+    ax.add_patch(daarc)
+    ax.text(2.9, 4.3, 'd(A)')
+    ##dbarc
+    dbarc = mpatches.Arc((3, 4), 1, 1, theta1 = 238, theta2 = 302)
+    ax.add_patch(dbarc)
+    ax.text(2.9, 3.3, 'd(B)')
     plt.show()
-    
 
-## uncomment functions to show plots
+## visualization of sphere in 2 and 3 dimensions
+def sphere23D():
+    fig = plt.figure()
+    ax = fig.add_subplot(1,2,2, projection='3d')
+    u = np.linspace(0, 2 * np.pi, 100)
+    v = np.linspace(0, np.pi, 100)
+    x = np.outer(np.cos(u), np.sin(v))
+    y = np.outer(np.sin(u), np.sin(v))
+    z = np.outer(np.ones(np.size(u)), np.cos(v))
+    ax.plot_surface(x, y, z, linewidth=0.0)
+    bx = fig.add_subplot(1, 2, 1)
+    c = plt.Circle((0.5, 0.5), 0.5)
+    bx.add_patch(c)
+    plt.show()
+
+
+'''
+uncomment to show plot
+dspace = point in 2 and 3 dimensional space
+worldC = point in world coordinates
+camC = point in camera coordinates
+imgC = point in image coordinates
+image = greyscale img
+subimage = colormap representation of img with color values
+binocularD = binocular disparity visualization
+motionParallax = motion parallax visualization
+sphere23D = 2 and 3D representations of sphere
+'''
 def visualize(images):
     img = images[0]
     #dspace()
@@ -242,4 +294,5 @@ def visualize(images):
     #image(img)
     #subImage(img)
     #binocularD()
-    motionParallax()
+    #motionParallax()
+    sphere23D()
