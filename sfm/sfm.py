@@ -7,20 +7,17 @@ from camera_calibration import parameters
 
 def main():  # pragma: no cover
 
-    
-
     ## camera calibration
     #dir = "images/calibration_images"
     #calibration_images = readImages(dir)
     #parameters(calibration_images)
-
 
     ## read images
     dir = "images/boat_images"
     images = readImages(dir)
     #showImage(images[0])
 
-    ## visualize needed plots
+    ## visualize plots
     visualize(images)
 
     ## feature detection
