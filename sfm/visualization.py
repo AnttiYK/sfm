@@ -325,6 +325,7 @@ def shapeFromSilhouette():
     ax.set_zlim(0, 10)
     plt.show()
 
+## displays silhouette of object using foreground extraction
 def silhouette(img):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
@@ -334,6 +335,38 @@ def silhouette(img):
     ax = fig.add_subplot(1,2,2)
     estimatedThreshold, thresholdImage=cv.threshold(gray,90,255,cv.THRESH_BINARY) 
     plt.imshow(thresholdImage, cmap = 'Greys')
+    plt.show()
+
+## Linear perspective visualization
+def linearPerspective():
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1,projection='3d')
+    
+    ##cube
+    axes = [5, 5, 5]
+    data = np.ones(axes)
+    ax.voxels(data)
+    ##lines
+    plt.plot((5,5), (5,1000), (5,5), color = 'black')
+    ax.text(5, 5, 5.2, '(5, 5, 5)', color = 'black')
+    ax.text(-3, 5, 5, '(0, 5, 5)', color = 'black')
+    plt.rcParams.update({'font.size': 6})
+    ax.text(5, 1000, 5.2, '(5, 1000, 5)', color = 'black')
+    ax.text(-18, 1000, 5.2, '(0, 1000, 5)', color = 'black')
+    plt.plot((0, 0), (5, 1000), (5, 5), color = 'black')
+    ##limits
+    ax.set_xlim(-10, 10)
+    ax.set_ylim(-10, 10)
+    ax.set_zlim(0, 20)
+    ##hide grid and frames
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_zticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
     plt.show()
 
 
@@ -363,4 +396,5 @@ def visualize(images):
     #motionParallax()
     #sphere23D()
     #shapeFromSilhouette()
-    silhouette(img)
+    #silhouette(img)
+    linearPerspective()
