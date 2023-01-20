@@ -19,7 +19,6 @@ def dspace():
     ax.set_zlabel("z")
     plt.grid()
     plt.plot(5,5,5,marker = 'o')
- 
     bx = fig.add_subplot(1, 2, 2)
     bx.set_xlabel('x')
     bx.set_ylabel('y')
@@ -341,7 +340,6 @@ def silhouette(img):
 def linearPerspective():
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1,projection='3d')
-    
     ##cube
     axes = [5, 5, 5]
     data = np.ones(axes)
