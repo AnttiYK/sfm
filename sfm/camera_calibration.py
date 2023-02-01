@@ -34,21 +34,25 @@ def parameters(imgs):
  
             # Draw and display the corners
             img = cv.drawChessboardCorners(i, CHECKERBOARD, corners2, ret) 
-        cv.imshow('img',img)
-        cv.waitKey(0)
+        ## uncomment next 3 lines to show calibration images
+        #cv.imshow('img',img)
+        #cv.waitKey(0)
  
-    cv.destroyAllWindows()
+    #cv.destroyAllWindows()
  
     h,w = img.shape[:2]
     
     ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
- 
-    print("Camera matrix : \n")
-    print(mtx)
-    print("dist : \n")
-    print(dist)
-    print("rvecs : \n")
-    print(rvecs)
-    print("tvecs : \n")
-    print(tvecs)
+    
+    ##uncomment to print matrixes
+    #print("Camera matrix : \n")
+    #print(mtx)
+    #print("dist : \n")
+    #print(dist)
+    #print("rvecs : \n")
+    #print(rvecs)
+    #print("tvecs : \n")
+    #print(tvecs)
+
+    return mtx, dist
     

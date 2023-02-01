@@ -1,5 +1,5 @@
 
-from utils import readImages, showImage, showFeatures, showMatches
+from utils import readImages, showImage, showFeatures, showMatches, undistort
 from visualization import visualize
 from feature_detection import orb
 from feature_matching import bfMatch
@@ -10,15 +10,16 @@ def main():  # pragma: no cover
     ## camera calibration
     dir = "images/calibration_images"
     calibration_images = readImages(dir)
-    parameters(calibration_images)
+    mtx, dist = parameters(calibration_images)
 
     ## read images
     dir = "images/boat_images"
     images = readImages(dir)
+    c_images = undistort(images, mtx, dist)
     #showImage(images[0])
 
     ## visualize plots
-    #visualize(images)
+    visualize(images, calibration_images, mtx, dist)
 
     ## feature detection
     ## orb[i] = [kp, des]

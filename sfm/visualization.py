@@ -4,7 +4,7 @@ import mpl_toolkits.mplot3d.art3d as art3d
 import matplotlib.patches as mpatches
 import cv2 as cv
 import numpy as np
-
+import time
 '''
 Visualizations used in thesis
 uncomment lines at visualize function at bottom to display plots
@@ -122,23 +122,22 @@ def imgC():
     plt.show()
 
 ## shows grayscale image determined in visualize
-def image(img):
-    fig, ax = plt.subplots()
-    plt.axis([0,1200, 0, 800])
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    plt.gca().invert_yaxis()
-    plt.imshow(gray, cmap='gray')
-    ax.xaxis.tick_top()
-    plt.show()
+# def image(img):
+#     fig, ax = plt.subplots()
+#     plt.axis([0,1200, 0, 800])
+#     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+#     plt.gca().invert_yaxis()
+#     plt.imshow(gray, cmap='gray')
+#     ax.xaxis.tick_top()
+#     plt.show()
 
 ## shows colormap representation of part of image
 def subImage(img):
     fig, ax = plt.subplots()
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    ax.matshow(gray[0:5, 0:5], cmap = 'Greys')
+    ax.matshow(img[0:5, 0:5], cmap = 'Greys')
     for i in range(5):
         for j in range(5):
-            c = gray[j,i]
+            c = img[j,i]
             ax.text(i, j, str(c))
     plt.show()
 
@@ -326,13 +325,12 @@ def shapeFromSilhouette():
 
 ## displays silhouette of object using foreground extraction
 def silhouette(img):
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
     fig = plt.figure()
     ax = fig.add_subplot(1, 2, 1)
-    plt.imshow(gray, cmap = 'Greys')
+    plt.imshow(img, cmap = 'Greys')
     ax = fig.add_subplot(1,2,2)
-    estimatedThreshold, thresholdImage=cv.threshold(gray,90,255,cv.THRESH_BINARY) 
+    estimatedThreshold, thresholdImage=cv.threshold(img,90,255,cv.THRESH_BINARY) 
     plt.imshow(thresholdImage, cmap = 'Greys')
     plt.show()
 
@@ -367,6 +365,39 @@ def linearPerspective():
     ax.spines['left'].set_visible(False)
     plt.show()
 
+## shows calibration image before and after undistort
+def imgCalibration(c_img, mtx, dist):
+    fig=plt.figure()
+    ax=fig.add_subplot(1, 2, 1)
+    plt.imshow(c_img)
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    start_time = time.time()
+    fixed_c_img = cv.undistort(c_img, mtx, dist)
+    end_time = time.time()
+    print("--- %s seconds ---" % (time.time() - start_time))
+    ax=fig.add_subplot(1,2,2)
+    plt.imshow(fixed_c_img)
+    ##hide grid and frames
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    plt.show()
+
+def diffusion(img):
+    d_img = cv.ximgproc.anisotropicDiffusion(img, 1, 0.1, niters = 600)
+    plt.imshow(d_img)
+    plt.show()
+
 
 '''
 uncomment to show plot
@@ -381,9 +412,13 @@ motionParallax = motion parallax visualization
 sphere23D = 2 and 3D representations of sphere
 shapeFromSilhouette = shape from silhouette visualization
 silhouette = displays silhouette of object
+linearPerspective = display linear perspective
+imgCalibration = display calibration image before and after fix
+diffusion = diffusion filtering
 '''
-def visualize(images):
+def visualize(images, calibration_images, mtx, dist):
     img = images[0]
+    c_img = calibration_images[3]
     #dspace()
     #worldC()
     #camC()
@@ -395,4 +430,6 @@ def visualize(images):
     #sphere23D()
     #shapeFromSilhouette()
     #silhouette(img)
-    linearPerspective()
+    #linearPerspective()
+    #imgCalibration(c_img, mtx, dist)
+    diffusion(img)

@@ -12,6 +12,12 @@ def readImages(dir):
         imgs.append(np.asarray(img))
     return np.asarray(imgs)
 
+def undistort(imgs, mtx, dist):
+    for i in imgs:
+       i = cv.undistort(i, mtx, dist)
+    return imgs
+
+
 def showImage(img):
     plt.imshow(img), plt.show()
 
