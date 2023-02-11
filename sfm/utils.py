@@ -1,8 +1,6 @@
 import cv2 as cv
 import os
 import numpy as np
-import matplotlib.pyplot as plt
-import random
 
 def readImages(dir):
     imgs = []
@@ -18,16 +16,5 @@ def undistort(imgs, mtx, dist):
     return imgs
 
 
-def showImage(img):
-    plt.imshow(img), plt.show()
 
-def showFeatures(kps, imgs):
-    r = random.randint(0, len(imgs)-1)
-    img = imgs[r]
-    kp = kps[r][0]
-    img2 = cv.drawKeypoints(img, kp, None, color=(255,0,0), flags=0)
-    plt.imshow(img2), plt.show()
 
-def showMatches(img1, img2, kp1, kp2, matches):
-    img3 = cv.drawMatches(img1, kp1, img2, kp2, matches[:20], None, flags = cv.DrawMatchesFlags_DEFAULT)
-    plt.imshow(img3), plt.show()

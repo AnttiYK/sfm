@@ -1,8 +1,8 @@
 
-from utils import readImages, showImage, showFeatures, showMatches, undistort
+from utils import readImages, undistort
 from visualization import visualize
-from feature_detection import orb
-from feature_matching import bfMatch
+from feature_detection import akaze, showFeatures
+from feature_matching import bfMatch,  showMatches
 from camera_calibration import parameters
 
 def main():  # pragma: no cover
@@ -22,10 +22,10 @@ def main():  # pragma: no cover
     visualize(images, calibration_images, mtx, dist)
 
     ## feature detection
-    ## orb[i] = [kp, des]
-    #orb_f = orb(images)
-    #showFeatures(orb_f, images)
-
+    ## akaze[i] = [kp, des]
+    akaze_f = akaze(images)
+    showFeatures(akaze_f, images)
+    
     ## feature matching
     #matches = bfMatch(orb_f[0], orb_f[1])
     #showMatches(images[0], images[1], orb_f[0][0], orb_f[1][0], matches)

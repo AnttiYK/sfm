@@ -5,6 +5,10 @@ import matplotlib.patches as mpatches
 import cv2 as cv
 import numpy as np
 import time
+from scipy import ndimage as ndi
+import matplotlib.pyplot as plt
+from skimage.feature import peak_local_max
+from skimage import data, img_as_float
 '''
 Visualizations used in thesis
 uncomment lines at visualize function at bottom to display plots
@@ -395,9 +399,64 @@ def imgCalibration(c_img, mtx, dist):
     ax.spines['left'].set_visible(False)
     plt.show()
 
-def diffusion(img):
-    d_img = cv.ximgproc.anisotropicDiffusion(img, 0.1, 0.2, niters = 600)
-    plt.imshow(d_img)
+## illustrates the local fetures
+def scharr(img):
+    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    ## image before scharr filter
+    fig = plt.figure()
+    ax=fig.add_subplot(2, 2, 1)
+    ax.title.set_text('Original image')
+    plt.imshow(img, cmap='gray')
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ## scharr filtering of image
+    s_x = cv.Scharr(img, cv.CV_64F, 1, 0)
+    s_x_abs =  np.uint8(np.absolute(s_x)) 
+    s_y = cv.Scharr(img, cv.CV_64F, 0, 1)
+    s_y_abs = np.uint8(np.absolute(s_y))
+    s_xy = cv.bitwise_or(s_x_abs, s_y_abs)
+    ax=fig.add_subplot(2, 2, 2)
+    ax.title.set_text("Image after Scharr filtering")
+    plt.imshow(s_xy, cmap='gray')
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ## local maximas
+    ax = fig.add_subplot(2,2, 3)
+    ax.title.set_text("Image with local maximas")
+    maximas = ndi.maximum_filter(s_xy, size=20, mode='constant')
+    plt.imshow(maximas, cmap='gray')
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ## peak coordinates
+    ax = fig.add_subplot(2, 2, 4)
+    ax.title.set_text('Local maxima coordinates on original image')
+    coordinates = peak_local_max(s_xy, min_distance=20)
+    plt.imshow(img, cmap='gray')
+    plt.plot(coordinates[:, 1], coordinates[:, 0], 'r.')
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ##show image
+    plt.tight_layout()
     plt.show()
 
 
@@ -416,10 +475,10 @@ shapeFromSilhouette = shape from silhouette visualization
 silhouette = displays silhouette of object
 linearPerspective = display linear perspective
 imgCalibration = display calibration image before and after fix
-diffusion = diffusion filtering
+scharr = display local feature detection
 '''
 def visualize(images, calibration_images, mtx, dist):
-    img = images[0]
+    img = images[5]
     c_img = calibration_images[3]
     #dspace()
     #worldC()
@@ -434,4 +493,4 @@ def visualize(images, calibration_images, mtx, dist):
     #silhouette(img)
     #linearPerspective()
     #imgCalibration(c_img, mtx, dist)
-    diffusion(img)
+    #scharr(img)
