@@ -122,22 +122,23 @@ def imgC():
     plt.show()
 
 ## shows grayscale image determined in visualize
-# def image(img):
-#     fig, ax = plt.subplots()
-#     plt.axis([0,1200, 0, 800])
-#     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-#     plt.gca().invert_yaxis()
-#     plt.imshow(gray, cmap='gray')
-#     ax.xaxis.tick_top()
-#     plt.show()
+def image(img):
+    fig, ax = plt.subplots()
+    plt.axis([0,1200, 0, 800])
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    plt.gca().invert_yaxis()
+    plt.imshow(gray, cmap='gray')
+    ax.xaxis.tick_top()
+    plt.show()
 
 ## shows colormap representation of part of image
 def subImage(img):
     fig, ax = plt.subplots()
-    ax.matshow(img[0:5, 0:5], cmap = 'Greys')
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    ax.matshow(gray[0:5, 0:5], cmap = 'Greys')
     for i in range(5):
         for j in range(5):
-            c = img[j,i]
+            c = gray[j,i]
             ax.text(i, j, str(c))
     plt.show()
 
@@ -325,12 +326,13 @@ def shapeFromSilhouette():
 
 ## displays silhouette of object using foreground extraction
 def silhouette(img):
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     fgbg = cv.bgsegm.createBackgroundSubtractorMOG()
     fig = plt.figure()
     ax = fig.add_subplot(1, 2, 1)
-    plt.imshow(img, cmap = 'Greys')
+    plt.imshow(gray, cmap = 'Greys')
     ax = fig.add_subplot(1,2,2)
-    estimatedThreshold, thresholdImage=cv.threshold(img,90,255,cv.THRESH_BINARY) 
+    estimatedThreshold, thresholdImage=cv.threshold(gray,90,255,cv.THRESH_BINARY) 
     plt.imshow(thresholdImage, cmap = 'Greys')
     plt.show()
 
@@ -394,7 +396,7 @@ def imgCalibration(c_img, mtx, dist):
     plt.show()
 
 def diffusion(img):
-    d_img = cv.ximgproc.anisotropicDiffusion(img, 1, 0.1, niters = 600)
+    d_img = cv.ximgproc.anisotropicDiffusion(img, 0.1, 0.2, niters = 600)
     plt.imshow(d_img)
     plt.show()
 
