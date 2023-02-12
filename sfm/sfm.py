@@ -22,10 +22,11 @@ def main():  # pragma: no cover
     visualize(images, calibration_images, mtx, dist)
 
     ## feature detection
-    ## akaze[i] = [kp, des]
-    akaze_f = akaze(images)
-    showFeatures(akaze_f, images)
+    ## returns array where akaze[i] = [kp, des] contains keypoint coordinates [i][0] and the descriptor values [i][1] for image i
+    features = akaze(images)
+    #showFeatures(features, images)
     
     ## feature matching
-    #matches = bfMatch(orb_f[0], orb_f[1])
-    #showMatches(images[0], images[1], orb_f[0][0], orb_f[1][0], matches)
+    ## returns array where matches[i][j] contain matches between image i and j sorted from best match to worst
+    matches = bfMatch(features)
+    showMatches(images, features, matches)
