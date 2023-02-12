@@ -2,7 +2,7 @@
 from utils import readImages, undistort
 from visualization import visualize
 from feature_detection import akaze, showFeatures
-from feature_matching import bfMatch,  showMatches
+from feature_matching import bfMatch, perspective,  showMatches
 from camera_calibration import parameters
 
 def main():  # pragma: no cover
@@ -29,4 +29,7 @@ def main():  # pragma: no cover
     ## feature matching
     ## returns array where matches[i][j] contain matches between image i and j sorted from best match to worst
     matches = bfMatch(features)
-    showMatches(images, features, matches)
+    ## perspective transformation
+    ## returns array transformation[i][j] = [tm, mask] where tm is transformation matrix between images i and j and mask stores inlier information
+    transformations = perspective(images, features, matches)
+    showMatches(images, transformations, features, matches)

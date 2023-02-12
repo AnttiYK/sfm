@@ -13,10 +13,44 @@ def bfMatch(features):
             matches[i].append(sub_matches)
     return matches
 
-def showMatches(images, features, matches):
-    img = cv.drawMatches(images[0], features[0][0], images[1], features[1][0], matches[0][1][:20], None, flags = cv.DrawMatchesFlags_DEFAULT)
-    plt.imshow(img)
-    ax = plt.gca()
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
+def perspective(images, features, matches):
+    transformation = []
+    for i in range(len(features)):
+        img = images[i]
+        h, w = len(img), len(img[0])
+        pts = np.float32([ [0, 0], [0, h-1], [w-1, h-1], [w-1, 0]]).reshape(-1, 1, 2)
+        transformation.append([])
+        for j in range(len(features)):
+            src = np.float32([features[i][0][m.queryIdx].pt for m in matches[i][j]]).reshape(-1, 1, 2)
+            dst = np.float32([features[j][0][m.trainIdx].pt for m in matches[i][j]]).reshape(-1, 1, 2)
+            M, mask = cv.findHomography(src, dst, cv.RANSAC, 5.0)
+            matchesMask = mask.ravel().tolist()
+            tm = cv.perspectiveTransform(pts, M)
+            transformation[i].append([tm, matchesMask])
+    return transformation
+
+def showMatches(images, transformations, features, matches):
+    draw_params2 = dict(matchColor = (0, 255, 0), singlePointColor = None, matchesMask = transformations[3][4][1], flags = 2)
+    draw_params1 = dict(matchColor = (255, 0, 0), singlePointColor = None, flags = 2)
+    img1 = cv.drawMatches(images[3], features[3][0], images[4], features[4][0], matches[3][4], None, **draw_params1)
+    img2 = cv.drawMatches(images[3], features[3][0], images[4], features[4][0], matches[3][4], None, **draw_params2)
+    fig = plt.figure()
+    ax=fig.add_subplot(1, 2, 1)
+    plt.imshow(img1, 'gray')
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax = fig.add_subplot(1, 2, 2)
+    plt.imshow(img2, 'gray')
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
     plt.show()
