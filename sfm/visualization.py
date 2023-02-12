@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from skimage.feature import peak_local_max
 from skimage import data, img_as_float
 '''
-Visualizations used in thesis
+Visualizations used in thesis that do not directly correlate to SFM
 uncomment lines at visualize function at bottom to display plots
 '''
 
