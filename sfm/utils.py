@@ -2,6 +2,9 @@ import cv2 as cv
 import os
 import numpy as np
 
+'''
+Reads images from dir and returns them as array
+'''
 def readImages(dir):
     imgs = []
     for i in sorted(os.listdir(dir)):
@@ -10,10 +13,6 @@ def readImages(dir):
         imgs.append(np.asarray(img))
     return np.asarray(imgs)
 
-def undistort(imgs, mtx, dist):
-    for i in imgs:
-       i = cv.undistort(i, mtx, dist)
-    return imgs
 
 
 

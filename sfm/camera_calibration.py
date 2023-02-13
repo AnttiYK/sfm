@@ -55,4 +55,15 @@ def parameters(imgs):
     #print(tvecs)
 
     return mtx, dist
+
+
+
+'''
+undistorts the images
+'''
+def undistort(imgs, mtx, dist):
+    for i in imgs:
+       i = cv.undistort(i, mtx, dist)
+    return imgs
+
     
