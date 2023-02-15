@@ -16,8 +16,8 @@ def parameters(imgs):
     imgpoints = [] 
  
     # world coordinates for 3D points
-    objp = np.zeros((1, CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
-    objp[0,:,:2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
+    obj_point = np.zeros((1, CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
+    obj_point[0,:,:2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
 
     for i in imgs:
         gray = cv.cvtColor(i,cv.COLOR_BGR2GRAY)
@@ -26,7 +26,7 @@ def parameters(imgs):
         ret, corners = cv.findChessboardCorners(gray, CHECKERBOARD, cv.CALIB_CB_ADAPTIVE_THRESH + cv.CALIB_CB_FAST_CHECK + cv.CALIB_CB_NORMALIZE_IMAGE)
 
         if ret == True:
-            objpoints.append(objp)
+            objpoints.append(obj_point)
             # refining pixel coordinates for given 2d points.
             corners2 = cv.cornerSubPix(gray, corners, (11,11),(-1,-1), criteria)
          
@@ -34,32 +34,16 @@ def parameters(imgs):
  
             # Draw and display the corners
             img = cv.drawChessboardCorners(i, CHECKERBOARD, corners2, ret) 
-        ## uncomment next 3 lines to show calibration images
-        #cv.imshow('img',img)
-        #cv.waitKey(0)
- 
-    #cv.destroyAllWindows()
+
  
     h,w = img.shape[:2]
-    
     ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-    
-    ##uncomment to print matrixes
-    #print("Camera matrix : \n")
-    #print(mtx)
-    #print("dist : \n")
-    #print(dist)
-    #print("rvecs : \n")
-    #print(rvecs)
-    #print("tvecs : \n")
-    #print(tvecs)
-
     return mtx, dist
 
 
 
 '''
-undistorts the images
+undistorts the images based on parameters calculated in parameters()
 '''
 def undistort(imgs, mtx, dist):
     for i in imgs:

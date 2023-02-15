@@ -28,11 +28,11 @@ def perspective(images, features, matches):
             M, mask = cv.findHomography(src, dst, cv.RANSAC, 5.0)
             ## sets mask sum to 0 when image is compared to itself
             if (i == j):
-                matchesMask = [0]
+                mask = [0]
             else:
-                matchesMask = mask.ravel().tolist()
+                mask = mask.ravel().tolist()
             tm = cv.perspectiveTransform(pts, M)
-            transformation[i].append([tm, matchesMask])
+            transformation[i].append([tm, mask])
     return transformation
 
 def showMatches(images, transformations, features, matches):
@@ -46,7 +46,7 @@ def showMatches(images, transformations, features, matches):
     img1 = cv.drawMatches(images[firstImageIndex], features[firstImageIndex][0], images[secondImageIndex], features[secondImageIndex][0], matches[firstImageIndex][secondImageIndex], None, **draw_params1)
     img2 = cv.drawMatches(images[firstImageIndex], features[firstImageIndex][0], images[secondImageIndex], features[secondImageIndex][0], matches[firstImageIndex][secondImageIndex], None, **draw_params2)
     fig = plt.figure()
-    ax=fig.add_subplot(1, 2, 1)
+    ax=fig.add_subplot(1, 1, 1)
     plt.imshow(img1, 'gray')
     ax.grid(False)
     ax.set_xticks([])
@@ -55,7 +55,7 @@ def showMatches(images, transformations, features, matches):
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.spines['left'].set_visible(False)
-    ax = fig.add_subplot(1, 2, 2)
+    ax = fig.add_subplot(1, 1, 1)
     plt.imshow(img2, 'gray')
     ax.grid(False)
     ax.set_xticks([])
