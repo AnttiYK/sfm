@@ -31,16 +31,14 @@ def perspective(images, features, matches):
                 mask = [0]
             else:
                 mask = mask.ravel().tolist()
-            tm = cv.perspectiveTransform(pts, M)
-            transformation[i].append([tm, mask])
+            H = cv.perspectiveTransform(pts, M)
+            transformation[i].append([H, mask])
     return transformation
 
 def showMatches(images, transformations, features, matches):
     firstImageIndex = 3
     secondImageIndex = 2
     mask = transformations[firstImageIndex][secondImageIndex][1]
-    count = sum(mask)
-    print(count)
     draw_params2 = dict(matchColor = (0, 255, 0), singlePointColor = None, matchesMask = mask, flags = 2)
     draw_params1 = dict(matchColor = (255, 0, 0), singlePointColor = None, flags = 2)
     img1 = cv.drawMatches(images[firstImageIndex], features[firstImageIndex][0], images[secondImageIndex], features[secondImageIndex][0], matches[firstImageIndex][secondImageIndex], None, **draw_params1)

@@ -8,7 +8,6 @@ import time
 from scipy import ndimage as ndi
 import matplotlib.pyplot as plt
 from skimage.feature import peak_local_max
-from skimage import data, img_as_float
 '''
 Visualizations used in thesis that do not directly correlate to SFM
 uncomment lines at visualize function at bottom to display plots
@@ -459,6 +458,36 @@ def scharr(img):
     plt.tight_layout()
     plt.show()
 
+## display different 2D transformations
+def transformations():
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_xlim(0, 20)
+    ax.set_ylim(0,20)
+    ## original cube
+    ax.add_patch(mpatches.Rectangle((0,0), 3, 3))
+    ax.text(0, 3.2, 'original')
+    ## translation
+    ax.add_patch(mpatches.Rectangle((4,4), 3,3))
+    ax.text(4, 7.2, 'translation')
+    ## euclidean 
+    ax.add_patch(mpatches.Rectangle((9, 0.2), 3, 3, angle=30))
+    ax.text(8, 4.4, 'euclidean')
+    ## similiriarity
+    ax.add_patch(mpatches.Rectangle((12, 6), 2, 2, angle = 20))
+    ax.text(12, 9.2, 'similiarity')
+    ## affine
+    ax.add_patch(mpatches.Polygon(((14, 1), (15, 3), (17, 3.5), (16, 1.5))))
+    ax.text(15, 4, 'affine')
+    ## projective
+    ax.add_patch(mpatches.Polygon(((18, 5), (17.5, 7.5), (19.5, 8), (19, 5))))
+    ax.text(17, 8.2, 'projective')
+    plt.show()
+
+
 
 '''
 uncomment to show plot
@@ -476,6 +505,7 @@ silhouette = displays silhouette of object
 linearPerspective = display linear perspective
 imgCalibration = display calibration image before and after fix
 scharr = display local feature detection
+transformations = display different 2D transformations
 '''
 def visualize(images, calibration_images, mtx, dist):
     img = images[5]
@@ -494,3 +524,4 @@ def visualize(images, calibration_images, mtx, dist):
     #linearPerspective()
     #imgCalibration(c_img, mtx, dist)
     #scharr(img)
+    transformations()
