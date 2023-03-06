@@ -45,9 +45,9 @@ def parameters(imgs):
 '''
 undistorts the images based on parameters calculated in parameters()
 '''
-def undistort(imgs, mtx, dist):
+def undistort(imgs, calibration):
     for i in imgs:
-       i = cv.undistort(i, mtx, dist)
+       i = cv.undistort(i, calibration['mtx'], calibration['dist'])
     return imgs
 
     

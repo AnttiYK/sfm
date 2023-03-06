@@ -507,7 +507,9 @@ imgCalibration = display calibration image before and after fix
 scharr = display local feature detection
 transformations = display different 2D transformations
 '''
-def visualize(images, calibration_images, mtx, dist):
+def visualize(images, calibration_images, calibration):
+    mtx = calibration['mtx']
+    dist = calibration['dist']
     img = images[5]
     c_img = calibration_images[3]
     #dspace()
@@ -524,4 +526,4 @@ def visualize(images, calibration_images, mtx, dist):
     #linearPerspective()
     #imgCalibration(c_img, mtx, dist)
     #scharr(img)
-    transformations()
+    #transformations()

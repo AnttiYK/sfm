@@ -8,13 +8,13 @@ def akaze(imgs):
     for i in imgs:
         kp = detector.detect(i, None)
         kp, des = detector.compute(i, kp)
-        features.append([kp,des])
+        features.append({'kp':kp, 'des':des})
     return features
 
 def showFeatures(kps, imgs):
     r = random.randint(0, len(imgs)-1)
     img = imgs[r]
-    kp = kps[r][0]
+    kp = kps[r]['kp']
     img2 = cv.drawKeypoints(img, kp, None, color=(255,0,0), flags=0)
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
