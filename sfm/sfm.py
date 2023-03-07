@@ -8,7 +8,7 @@ from incremental_reconstruction import reconstruction
 class structure:
     calibration_images = None
     images = None
-    calibration = {"mtx" : None, 'dist' : None}
+    calibration = {"mtx" : None, 'dist' : None, 'rvecs':None, 'tvecs':None}
     features = None
     matches = None
     init = None
@@ -22,7 +22,7 @@ def main():  # pragma: no cover
     dir = "images/calibration_images"
     struct.calibration_images = readImages(dir)
     ## mtx = camera matrix, dist = distCoeffs
-    struct.calibration['mtx'], struct.calibration['dist'] = parameters(struct.calibration_images)
+    struct.calibration['mtx'], struct.calibration['dist'], struct.calibration['rvecs'], struct.calibration['tvecs'] = parameters(struct.calibration_images)
     
     ## read images
     dir = "images/boat_images"

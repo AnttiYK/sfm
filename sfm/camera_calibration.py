@@ -38,7 +38,7 @@ def parameters(imgs):
  
     h,w = img.shape[:2]
     ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-    return mtx, dist
+    return mtx, dist, rvecs, tvecs
 
 
 
