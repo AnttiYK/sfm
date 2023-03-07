@@ -14,11 +14,9 @@ def error(obj_p, img_p, transform, calibration, mode) -> tuple:
     if mode == 1:
         obj_p = cv.convertPointsFromHomogeneous(obj_p.T)
     img_p_c, _ = cv.projectPoints(obj_p, rot_v, tran_v, calibration['mtx'], None)
-    img_p_c = np.float32(img_p_c)
-    if(mode == 1):
-        error = cv.norm(img_p_c, np.float32(img_p.T))
-    else:
-        error = cv.norm (img_p_c, np.float32(img_p), cv.NORM_L2)
+    img_p_c = np.float32(img_p_c[:,0,:])
+    #error = cv.norm(img_p_c, np.float32(img_p.T) if mode == 1 else np.float32(img_p), cv.NORM_L2)
+    error = 1
     return error / len(img_p_c), obj_p
     
 def PnP(obj_p, img_p, calibration, dist, rot_v, mode):
@@ -53,26 +51,27 @@ def common_points(pts1, pts2, pts3):
     mask2 = mask2.reshape(int(mask2.shape[0]/2), 2)
     return np.array(c_points1), np.array(c_points2), mask1, mask2
 
-def bundle_adjustment(points, opt, t_mat, calibration, error):
-    variables = np.hstack((t_mat.ravel(), calibration['mtx'].ravel()))
-    variables = np.hstack((variables, opt.ravel()))
-    variables = np.hstack((variables, points.ravel()))
-    
-    ## optimal error
-    m1 = points[0:12].reshape((3,4))
+def optimal_error(points):
+    m = points[0:12].reshape((3,4))
     k = points[12:21].reshape((3,3))
     r = int(len(points[21:])*0.4)
     p = points[21:21 + r].reshape((2, int(r/2))).T
-    p1 = points[21 + r].reshape((int(len(points[21+r:])/3),3))
-    rot = m1[:3, :3]
-    tran = m1[:3, 3]
+    points = points[21 + r:].reshape((int(len(points[21+r:])/3),3))
+    rot = m[:3, :3]
+    tran = m[:3, 3]
     rvec = cv.Rodrigues(rot)
-    ip = cv.projectPoints(p1, rvec, tran, k, None)
+    ip = cv.projectPoints(points, rvec, tran, k, None)
     ip = ip[:, 0, :]
     e = [(p[idx]-ip[idx]**2 for idx in range(len(p)))]
     optimal_error = np.array(e).ravel()/len(p)
-    
-    values = least_squares(optimal_error, variables, gtol= error).x
+    return optimal_error
+
+def bundle_adjustment(points, opt, t_mat, calibration, error):
+    variables = np.hstack((t_mat.ravel(), calibration['mtx'].ravel()))
+    print(variables)
+    variables = np.hstack((variables, opt.ravel()))
+    variables = np.hstack((variables, points.ravel()))
+    values = least_squares(optimal_error, variables, gtol= error, ftol = error, xtol = error).x
     k = values[12:21].reshape((3,3))
     r=int(len(values[21:])*0.4)
     return values[21 + r:].reshape((int(len(values[21+r:])/3),3)), values[21:21+r].reshape((2, int(r/2))).T, values[0:12].reshape((3,4))
@@ -107,11 +106,10 @@ def pose_estimation(matches, features, order, calibration, images):
     ## incremental reconstruction
 
     for i in range(1, len(order)-1):
-        print(i)
         i1 = order[i]
         i2 = order[i+1]
-        src = np.float32([features[i1]['kp'][m.queryIdx].pt for m in matches[i1][i2]]).reshape(-1, 1, 2)
-        dst = np.float32([features[i2]['kp'][m.trainIdx].pt for m in matches[i1][i2]]).reshape(-1, 1, 2)        
+        src = np.float32([features[i1]['kp'][m.queryIdx].pt for m in matches[i1][i2]])
+        dst = np.float32([features[i2]['kp'][m.trainIdx].pt for m in matches[i1][i2]])    
         if i != 1:
             f0, f1, points = triangulate(p0, p1, f0, f1)
             f1 = f1.T
@@ -122,26 +120,28 @@ def pose_estimation(matches, features, order, calibration, images):
         c_points2 = dst[c_points1]
         c_pointsC = src[c_points1]
         
-        rot, tran, c_points2, points, c_pointsC = PnP(points[c_points0], dst, calibration, np.zeros((5,1), dtype=np.float32), c_pointsC, 0)
-        trans_m1 = np.hstack((rot, tran))
-        p2 = np.matmul(calibration['mtx'], trans_m1)
+        rot, tran, c_points2, points, c_pointsC = PnP(points[c_points0], c_points2, calibration, np.zeros((5,1), dtype=np.float32), c_pointsC, 0)
+        t_mat1 = np.hstack((rot, tran))
+        p2 = np.matmul(calibration['mtx'], t_mat1)
         
-        err, points = error(points, c_points2, trans_m1, calibration['mtx'], 0)
+        err, points = error(points, c_points2, t_mat1, calibration, 0)
         
         c_mask0, c_mask1, points = triangulate(p1, p2, c_mask0, c_mask1)
-        err, points = error(points, c_mask1, t_mat1, calibration['mtx'], 0)
+        err, points = error(points, c_mask1, t_mat1, calibration, 1)
         
         poses = np.hstack((poses, p2.ravel()))
         
         ##bundle adjustment
-        points, c_mask1, t_mat1 = bundle_adjustment(points, c_mask1, t_mat1, calibration['mtx'], 0.5)
-        p2 = np.matmul(calibration['mtx'], t_mat1)
-        err, points = error(points, c_mask1, t_mat1, calibration['mtx'], 0)
-        t_points = np.vstack((t_points, points))
-        pl = np.array(c_mask1, dtype =np.int32)
-        img = images[i2]
-        cvec = np.array([img[l[1], l[0]]]for l in pl.T)
-        t_colors = np.vstack((t_colors, cvec))
+        #points, c_mask1, t_mat1 = bundle_adjustment(points, c_mask1, t_mat1, calibration, 0.5)
+        #p2 = np.matmul(calibration['mtx'], t_mat1)
+        #err, points = error(points, c_mask1, t_mat1, calibration, 0)
+        #t_points = np.vstack((t_points, points))
+        #pl = np.array(c_mask1, dtype =np.int32)
+        #img = images[i2]
+        #cvec = np.array([img[l[1], l[0]]]for l in pl.T)
+        #t_colors = np.vstack((t_colors, cvec))
+
+        t_points = 
 
         t_mat0 = np.copy(t_mat1)
         p0 = np.copy(p0)
