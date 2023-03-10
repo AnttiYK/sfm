@@ -1,7 +1,7 @@
 from utils import readImages
 from visualization import visualize
 from feature_detection import akaze, showFeatures
-from feature_matching import bfMatch, perspective,  showMatches
+from feature_matching import bfMatch, perspective, verified_matches, showMatches
 from camera_calibration import parameters, undistort
 from incremental_reconstruction import reconstruction
 
@@ -14,6 +14,7 @@ class structure:
     init = None
     transformations = None
     reconstruction = None
+    verified_matches = None
  
     
 def main():  # pragma: no cover
@@ -33,7 +34,7 @@ def main():  # pragma: no cover
     ## visualize plots not
     ## this contains secondary visualizations that are not directly related to sfm pipeline
     ## sfm related visualizations are located in their respective py files
-    visualize(struct.images, struct.calibration_images, struct.calibration)
+    #visualize(struct.images, struct.calibration_images, struct.calibration)
 
     ## feature detection
     ## returns array where akaze[i] = {kp, des} contains keypoint coordinates [i]['kp'] and the descriptor values [i]['des'] for image i
@@ -48,7 +49,9 @@ def main():  # pragma: no cover
     ## returns array transformation[i][j] = {H, mask} where H is homography matrix between images i and j and mask stores inlier information
     ## also returns initialization images with most matches
     struct.init, struct.transformations = perspective(struct.images, struct.features, struct.matches)
+    # only keep the verified matches
+    struct.verified_matches = verified_matches(struct.matches, struct.transformations)
     #showMatches(struct.images, struct.transformations, struct.features, struct.matches)
     
     ##incremental reconstruction
-    struct.reconstruction = reconstruction(struct.images, struct.features, struct.transformations, struct.init, struct.calibration, struct.matches)
+    struct.reconstruction = reconstruction(struct.images, struct.features, struct.transformations, struct.init, struct.calibration, struct.verified_matches)

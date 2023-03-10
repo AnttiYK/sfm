@@ -40,6 +40,15 @@ def perspective(images, features, matches):
             transformation[i].append({'H': H, 'mask': mask})
     return init, transformation
 
+def verified_matches(matches, transformations):
+    verified_matches = []
+    for i in range(len(matches[0])):
+        verified_matches.append([])
+        for j in range(len(matches[0])):
+            mask = transformations[i][j]['mask']
+            verified_matches[i].append(np.compress(mask, matches[i][j][:]))
+    return verified_matches
+
 def showMatches(images, transformations, features, matches):
     firstImageIndex = 3
     secondImageIndex = 2
