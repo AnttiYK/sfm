@@ -3,7 +3,7 @@ from visualization import visualize
 from feature_detection import akaze, showFeatures
 from feature_matching import bfMatch, perspective, verified_matches, showMatches
 from camera_calibration import parameters, undistort
-from incremental_reconstruction import reconstruction
+from incremental_reconstruction import reconstruction, yolo
 
 class structure:
     calibration_images = None
@@ -56,3 +56,4 @@ def main():  # pragma: no cover
     #showMatches(struct.images, struct.transformations, struct.features, struct.matches)
     ##incremental reconstruction
     struct.reconstruction = reconstruction(struct)
+    #yolo(struct)

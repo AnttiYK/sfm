@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+import open3d as o3d
 
 def get_order(transformations, init):
     order = []
@@ -25,8 +26,52 @@ def get_order(transformations, init):
         else:
             j = j + 1
     return order
+
+def drawlines(img1,img2,lines,pts1,pts2):
+    ''' img1 - image on which we draw the epilines for the points in img2
+        lines - corresponding epilines '''
+    r = 1200
+    c = 800
+    for r,pt1,pt2 in zip(lines,pts1,pts2):
+        color = tuple(np.random.randint(0,255,3).tolist())
+        x0,y0 = map(int, [0, -r[2]/r[1] ])
+        x1,y1 = map(int, [c, -(r[2]+r[0]*c)/r[1] ])
+        img1 = cv.line(img1, (x0,y0), (x1,y1), color,1)
+        img1 = cv.circle(img1,tuple(pt1),5,color, -1)
+        img2 = cv.circle(img2,tuple(pt2),5,color, -1)
+    return img1,img2
         
 
+def yolo(struct):
+    order = get_order(struct.transformations, struct.init)
+    i1 = order[0]
+    i2 = order[3]
+    pts1 = np.float32([struct.features[i1]['kp'][m.queryIdx].pt for m in struct.matches[i1][i2]]).reshape(-1, 1, 2)
+    pts2 = np.float32([struct.features[i2]['kp'][m.trainIdx].pt for m in struct.matches[i1][i2]]).reshape(-1, 1, 2)
+    E, mask = cv.findEssentialMat(pts1, pts2)
+    pts1 = pts1[mask.ravel()==1]
+    pts2 = pts2[mask.ravel()==1]
+    pts1 = pts1[0]
+    print(pts1)
+    pts1 = np.int32(pts1)
+    pts2 = np.int32(pts2)
+    img1 = struct.images[i1]
+    img2 = struct.images[i2]
+    # Find epilines corresponding to points in right image (second image) and
+    # drawing its lines on left image
+    lines1 = cv.computeCorrespondEpilines(pts2.reshape(-1,1,2), 2,E)
+    lines1 = lines1.reshape(-1,3)
+    img5,img6 = drawlines(img1,img2,lines1,pts1,pts2)
+    # Find epilines corresponding to points in left image (first image) and
+    # drawing its lines on right image
+    lines2 = cv.computeCorrespondEpilines(pts1.reshape(-1,1,2), 1,E)
+    lines2 = lines2.reshape(-1,3)
+    img3,img4 = drawlines(img2,img1,lines2,pts2,pts1)
+    plt.subplot(121),plt.imshow(img5)
+    plt.subplot(122),plt.imshow(img3)
+    plt.show()
+
+     
     
 def reconstruction(struct):
     order = get_order(struct.transformations, struct.init)
@@ -43,8 +88,8 @@ def reconstruction(struct):
         if (i == length-1):
             i -= 2
         i2 = order[i+1]
-        src = cv.KeyPoint_convert(struct.verified_matches[i1][i2])
-        dst = cv.KeyPoint_convert(struct.verified_matches[i2][i1])
+        src = cv.KeyPoint_convert(struct.verified_matches[i1][i2][0])
+        dst = cv.KeyPoint_convert(struct.verified_matches[i2][i1][1])
         l1 = len(src)
         l2 = len(dst)
         l = min(l1, l2)
@@ -92,7 +137,6 @@ def reconstruction(struct):
     for i, (R, t) in enumerate(zip(R_list, t_list)):
         camera_pos = -R.T @ t
         ax.scatter(camera_pos[0], camera_pos[1], camera_pos[2], marker='s', s=50, color=f'C{i}')
-        print(camera_pos)
         # Plot camera axes
         axes_len = 0.1
         #x_axis = R.T @ np.array([axes_len, 0, 0]) + camera_pos.reshape(3,1)
@@ -107,4 +151,10 @@ def reconstruction(struct):
     ax.set_zlabel('Z')
 
     plt.show()
-    
+    p = np.asarray(points3d)
+
+    o3d.visualization.draw_geometries([points3d],
+                                  zoom=0.3412,
+                                  front=[0.4257, -0.2125, -0.8795],
+                                  lookat=[2.6172, 2.0475, 1.532],
+                                  up=[-0.0694, -0.9768, 0.2024])

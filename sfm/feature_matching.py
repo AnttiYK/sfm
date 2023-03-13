@@ -46,7 +46,7 @@ def verified_matches(features, transformations):
         verified_matches.append([])
         for j in range(len(features)):
             mask = transformations[i][j]['mask']
-            verified_matches[i].append(np.compress(mask, features[i]['kp']))
+            verified_matches[i].append((np.compress(mask, features[i]['kp']), np.compress(mask, features[j]['kp'])))
     return verified_matches
 
 def showMatches(images, transformations, features, matches):
