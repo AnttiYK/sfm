@@ -40,13 +40,13 @@ def perspective(images, features, matches):
             transformation[i].append({'H': H, 'mask': mask})
     return init, transformation
 
-def verified_matches(matches, transformations):
+def verified_matches(features, transformations):
     verified_matches = []
-    for i in range(len(matches[0])):
+    for i in range(len(features)):
         verified_matches.append([])
-        for j in range(len(matches[0])):
+        for j in range(len(features)):
             mask = transformations[i][j]['mask']
-            verified_matches[i].append(np.compress(mask, matches[i][j][:]))
+            verified_matches[i].append(np.compress(mask, features[i]['kp']))
     return verified_matches
 
 def showMatches(images, transformations, features, matches):

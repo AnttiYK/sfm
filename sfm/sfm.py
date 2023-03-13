@@ -8,6 +8,7 @@ from incremental_reconstruction import reconstruction
 class structure:
     calibration_images = None
     images = None
+    length = None
     calibration = {"mtx" : None, 'dist' : None, 'rvecs':None, 'tvecs':None}
     features = None
     matches = None
@@ -28,6 +29,7 @@ def main():  # pragma: no cover
     ## read images
     dir = "images/boat_images"
     struct.images = readImages(dir)
+    struct.length = len(struct.images)
     ## undistort images
     struct.images = undistort(struct.images, struct.calibration)
 
@@ -50,8 +52,7 @@ def main():  # pragma: no cover
     ## also returns initialization images with most matches
     struct.init, struct.transformations = perspective(struct.images, struct.features, struct.matches)
     # only keep the verified matches
-    struct.verified_matches = verified_matches(struct.matches, struct.transformations)
+    struct.verified_matches = verified_matches(struct.features, struct.transformations)
     #showMatches(struct.images, struct.transformations, struct.features, struct.matches)
-    
     ##incremental reconstruction
-    struct.reconstruction = reconstruction(struct.images, struct.features, struct.transformations, struct.init, struct.calibration, struct.verified_matches)
+    struct.reconstruction = reconstruction(struct)
