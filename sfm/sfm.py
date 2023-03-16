@@ -1,37 +1,25 @@
 from utils import readImages
 from visualization import visualize
 from feature_detection import akaze, showFeatures
-from feature_matching import bfMatch, perspective, verified_matches, showMatches
+from feature_matching import bfMatch, perspective, perspective2, verified_matches, showMatches
 from camera_calibration import parameters, undistort
-from incremental_reconstruction import reconstruction
 
-class structure:
-    calibration_images = None
-    images = None
-    length = None
-    calibration = {"mtx" : None, 'dist' : None, 'rvecs':None, 'tvecs':None}
-    features = None
-    matches = None
-    init = None
-    transformations = None
-    reconstruction = None
-    verified_matches = None
  
     
 def main():  # pragma: no cover
-    struct = structure()
     ## camera calibration
     dir = "images/calibration_images"
-    struct.calibration_images = readImages(dir)
+    images = readImages(dir, Color = True)
     ## mtx = camera matrix, dist = distCoeffs
-    struct.calibration['mtx'], struct.calibration['dist'], struct.calibration['rvecs'], struct.calibration['tvecs'] = parameters(struct.calibration_images)
+    K, dist = parameters(images)
     
     ## read images
-    dir = "images/boat_images"
-    struct.images = readImages(dir)
-    struct.length = len(struct.images)
+    dir = "images/100CANON"
+    #dir = "images/CAB"
+    images = readImages(dir, Color = False)
+    
     ## undistort images
-    struct.images = undistort(struct.images, struct.calibration)
+    images = undistort(images, K, dist)
 
     ## visualize plots not
     ## this contains secondary visualizations that are not directly related to sfm pipeline
@@ -40,19 +28,13 @@ def main():  # pragma: no cover
 
     ## feature detection
     ## returns array where akaze[i] = {kp, des} contains keypoint coordinates [i]['kp'] and the descriptor values [i]['des'] for image i
-    struct.features = akaze(struct.images)
-    #showFeatures(struct.features, struct.images)
+    keypoints = []
+    src_kp, src_des = akaze(images[0])
+    keypoints.append(src_kp.pt)
     
-    ## feature matching
-    ## returns array where matches[i][j] contain matches between image i and j sorted from best match to worst
-    struct.matches = bfMatch(struct.features)
+    for i in range(1, len(images)):
+        dst_kp, dst_des = akaze(images[i])
+        idx_pairs = bfMatch(src_des, dst_des)
+        
+
     
-    ## perspective transformation
-    ## returns array transformation[i][j] = {H, mask} where H is homography matrix between images i and j and mask stores inlier information
-    ## also returns initialization images with most matches
-    struct.init, struct.transformations = perspective(struct.images, struct.features, struct.matches)
-    # only keep the verified matches
-    struct.verified_matches = verified_matches(struct.features, struct.transformations)
-    #showMatches(struct.images, struct.transformations, struct.features, struct.matches)
-    ##incremental reconstruction
-    struct.reconstruction = reconstruction(struct)

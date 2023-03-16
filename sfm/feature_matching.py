@@ -4,7 +4,7 @@ import numpy as np
 '''
 Brute force matching for 
 '''
-def bfMatch(features):
+def bfMatch(f1, f2):
     matcher = cv.BFMatcher(cv.NORM_HAMMING, crossCheck = True)
     matches = []
     for i in range(len(features)):
@@ -15,6 +15,20 @@ def bfMatch(features):
             matches[i].append(sub_matches)
     return matches
 
+def perspective2(images, kp, des, matches):
+    verified_matches = []
+    for i in range(len(kp) - 1):
+        src = np.float32([kp[i][m.queryIdx].pt for m in matches[i]]).reshape(-1, 1, 2)
+        dst = np.float32([kp[i+1][m.trainIdx].pt for m in matches[i]]).reshape(-1, 1, 2)
+        M, mask = cv.findHomography(src, dst, cv.RANSAC, 5.0)
+        dst = dst[mask == 1]
+        src = src[mask==1]
+        verified_matches.append(([src, dst]))
+    return verified_matches
+
+
+        
+        
 def perspective(images, features, matches):
     transformation = []
     init = (0, 0)

@@ -38,16 +38,18 @@ def parameters(imgs):
  
     h,w = img.shape[:2]
     ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-    return mtx, dist, rvecs, tvecs
+    return mtx, dist
 
 
 
 '''
 undistorts the images based on parameters calculated in parameters()
 '''
-def undistort(imgs, calibration):
+def undistort(imgs, K, dist):
+    undistorted_imgs = []
     for i in imgs:
-       i = cv.undistort(i, calibration['mtx'], calibration['dist'])
-    return imgs
+       ui = cv.undistort(i, K, dist)
+       undistorted_imgs.append(np.asarray(ui))
+    return np.asarray(undistorted_imgs)
 
     
