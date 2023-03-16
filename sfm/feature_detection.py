@@ -13,7 +13,7 @@ def showFeatures(kps, imgs):
     r = random.randint(0, len(imgs)-1)
     img = imgs[r]
     kp = kps[r]['kp']
-    img2 = cv.drawKeypoints(img, kp, None, color=(255,0,0), flags=0)
+    img2 = cv2.drawKeypoints(img, kp, None, color=(255,0,0), flags=0)
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     ax.grid(False)
