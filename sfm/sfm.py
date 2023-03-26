@@ -9,13 +9,15 @@ from triangulate import triangulate, showTriangulate
 import cv2
 import numpy as np
 
- 
+import numpy as np
+
     
 def main():  # pragma: no cover
     ## camera calibration
     dir = "images/calibration_images"
     calibration_images = readImages(dir, True)
     ## mtx = camera matrix, dist = distCoeffs
+    K, dist = parameters(calibration_images)
     K, dist = parameters(calibration_images)
     
     ## read images
