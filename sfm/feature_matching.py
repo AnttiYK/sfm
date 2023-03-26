@@ -1,67 +1,56 @@
 import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
+from cameraPose import PlotCamera
+
+def plotNewCamera(R, t, Rnew, tnew):
+    fig = plt.figure(figsize=(9,6))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    PlotCamera(np.eye(3,3),np.zeros((3,)),ax)
+    PlotCamera(R,t,ax)
+    PlotCamera(Rnew,tnew,ax,faceColor='red')
+    plt.show()
+    
 '''
 Brute force matching for 
 '''
+def matches2D3D(des1,i1,des2, i2, des3, kp3, mask, points3D):
+    des1_ = des1[i1][mask]
+    des2_ = des2[i2][mask]
+    matches = bfMatch(des3, np.concatenate((des1_, des2_), axis = 0))
+    
+    i3 = np.array([m.queryIdx for m in matches])
+    kp3_ = (np.array(kp3))[i3]
+    p3 = np.array([kp.pt for kp in kp3_])
+    
+    ## Filter out already triangulated matches
+    ip = np.array([m.trainIdx for m in matches])
+    ip[ip >= points3D.shape[0]] = ip[ip >= points3D.shape[0]] - points3D.shape[0]
+    points3D_ = points3D[ip]
+    
+    return p3, points3D_
+
 def bfMatch(f1, f2):
     matcher = cv.BFMatcher(cv.NORM_HAMMING, crossCheck = True)
-    matches = []
-    for i in range(len(features)):
-        matches.append([])
-        for j in range(len(features)):
-            sub_matches = matcher.match(features[i]['des'], features[j]['des'])
-            sub_matches = sorted(sub_matches, key = lambda x:x.distance)
-            matches[i].append(sub_matches)
+    matches = matcher.match(f1,f2)
+    matches = sorted(matches, key = lambda x:x.distance)
     return matches
 
-def perspective2(images, kp, des, matches):
-    verified_matches = []
-    for i in range(len(kp) - 1):
-        src = np.float32([kp[i][m.queryIdx].pt for m in matches[i]]).reshape(-1, 1, 2)
-        dst = np.float32([kp[i+1][m.trainIdx].pt for m in matches[i]]).reshape(-1, 1, 2)
-        M, mask = cv.findHomography(src, dst, cv.RANSAC, 5.0)
-        dst = dst[mask == 1]
-        src = src[mask==1]
-        verified_matches.append(([src, dst]))
-    return verified_matches
-
-
-        
-        
-def perspective(images, features, matches):
-    transformation = []
-    init = (0, 0)
-    init_val = 0
-    for i in range(len(features)):
-        img = images[i]
-        h, w = len(img), len(img[0])
-        pts = np.float32([ [0, 0], [0, h-1], [w-1, h-1], [w-1, 0]]).reshape(-1, 1, 2)
-        transformation.append([])
-        for j in range(len(features)):
-            src = np.float32([features[i]['kp'][m.queryIdx].pt for m in matches[i][j]]).reshape(-1, 1, 2)
-            dst = np.float32([features[j]['kp'][m.trainIdx].pt for m in matches[i][j]]).reshape(-1, 1, 2)
-            M, mask = cv.findHomography(src, dst, cv.RANSAC, 5.0)
-            ## sets mask sum to 0 when image is compared to itself
-            if (i == j):
-                mask = [0]
-            else:
-                mask = mask.ravel().tolist()
-            if (sum(mask)> init_val):
-                init_val = sum(mask)
-                init = (i, j)
-            H = cv.perspectiveTransform(pts, M)
-            transformation[i].append({'H': H, 'mask': mask})
-    return init, transformation
-
-def verified_matches(features, transformations):
-    verified_matches = []
-    for i in range(len(features)):
-        verified_matches.append([])
-        for j in range(len(features)):
-            mask = transformations[i][j]['mask']
-            verified_matches[i].append((np.compress(mask, features[i]['kp']), np.compress(mask, features[j]['kp'])))
-    return verified_matches
+def align_matches(kp1, des1, kp2, des2, matches):
+    i1 = np.array([m.queryIdx for m in matches])
+    i2 = np.array([m.trainIdx for m in matches])
+    ## Filter out non matched keypoints
+    kp1_ = (np.array(kp1))[i1]
+    kp2_ = (np.array(kp2))[i2]
+    ## Coordinates for keypoints
+    c1 = np.array([k.pt for k in kp1_])
+    c2 = np.array([k.pt for k in kp2_])
+    
+    return c1, c2, i1, i2
 
 def showMatches(images, transformations, features, matches):
     firstImageIndex = 3

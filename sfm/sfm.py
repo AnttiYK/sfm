@@ -1,59 +1,94 @@
-from utils import readImages
+from utils import readImages, pts2ply
 from visualization import visualize
 from feature_detection import akaze, showFeatures
-from feature_matching import bfMatch, perspective, verified_matches, showMatches
+from feature_matching import bfMatch, align_matches, matches2D3D, plotNewCamera
 from camera_calibration import parameters, undistort
-from incremental_reconstruction import reconstruction, yolo
+from fundamental import ransacFundamental, epipolar, showEpipolar
+from cameraPose import cameraPose, showCameraPose, disambiguatePose
+from triangulate import triangulate, showTriangulate
+import cv2
+import numpy as np
 
-class structure:
-    calibration_images = None
-    images = None
-    length = None
-    calibration = {"mtx" : None, 'dist' : None, 'rvecs':None, 'tvecs':None}
-    features = None
-    matches = None
-    init = None
-    transformations = None
-    reconstruction = None
-    verified_matches = None
  
     
 def main():  # pragma: no cover
-    struct = structure()
     ## camera calibration
     dir = "images/calibration_images"
-    struct.calibration_images = readImages(dir)
+    calibration_images = readImages(dir, True)
     ## mtx = camera matrix, dist = distCoeffs
-    struct.calibration['mtx'], struct.calibration['dist'], struct.calibration['rvecs'], struct.calibration['tvecs'] = parameters(struct.calibration_images)
+    K, dist = parameters(calibration_images)
     
     ## read images
-    dir = "images/boat_images"
-    struct.images = readImages(dir)
-    struct.length = len(struct.images)
+    dir = "images/100CANON"
+    images = readImages(dir, False)
     ## undistort images
-    struct.images = undistort(struct.images, struct.calibration)
-
+    images = undistort(images, K, dist)
+    
     ## visualize plots not
     ## this contains secondary visualizations that are not directly related to sfm pipeline
     ## sfm related visualizations are located in their respective py files
     #visualize(struct.images, struct.calibration_images, struct.calibration)
-
+    
     ## feature detection
-    ## returns array where akaze[i] = {kp, des} contains keypoint coordinates [i]['kp'] and the descriptor values [i]['des'] for image i
-    struct.features = akaze(struct.images)
+    kp1, des1 = akaze(images[0])
+    kp2, des2 = akaze(images[1])
     #showFeatures(struct.features, struct.images)
     
     ## feature matching
     ## returns array where matches[i][j] contain matches between image i and j sorted from best match to worst
-    struct.matches = bfMatch(struct.features)
+    matches = bfMatch(des1, des2)
+    ## align matches
+    points1, points2, i1, i2 = align_matches(kp1, des1, kp2, des2, matches)
     
-    ## perspective transformation
-    ## returns array transformation[i][j] = {H, mask} where H is homography matrix between images i and j and mask stores inlier information
-    ## also returns initialization images with most matches
-    struct.init, struct.transformations = perspective(struct.images, struct.features, struct.matches)
-    # only keep the verified matches
-    struct.verified_matches = verified_matches(struct.features, struct.transformations)
-    #showMatches(struct.images, struct.transformations, struct.features, struct.matches)
-    ##incremental reconstruction
-    struct.reconstruction = reconstruction(struct)
-    #yolo(struct)
+    ## Fundamental matrix
+    F, F_mask = ransacFundamental(points1, points2)
+    
+    ## Epipolar lines
+    e1 = epipolar(points1[F_mask], 1 ,F)
+    e2 = epipolar(points2[F_mask], 2, F)
+    #showEpipolar(images[0], images[1], e1, e2, points1[F_mask], points2[F_mask])
+    
+    ## Camera poses 
+    E = K.T.dot(F.dot(K))
+    R1, R2, t = cameraPose(E)
+    #showCameraPose(R1, R2, t)
+    ## Triangulate points 
+    points3d = triangulate(points1[F_mask], points2[F_mask], K, R2, t)
+    #showTriangulate(R1, R2, t, points1, points2, K, F_mask)
+    
+    ## Disambiguate camera pose
+    R, t, count = disambiguatePose(points1[F_mask], points2[F_mask], R1, R2, t, K)
+    
+    points3D = triangulate(points1[F_mask], points2[F_mask], K, R, t)
+    pts2ply(points3D, "results.ply")
+    
+    ## PnP and new camera ragistration
+    kp3, des3 = akaze(images[2])
+    img3D, pts3D = matches2D3D(des1,i1,des2, i2, des3, kp3, F_mask, points3D)
+    
+    ret, Rvec, tnew, PnP_mask = cv2.solvePnPRansac(pts3D[:, np.newaxis], img3D[:, np.newaxis], K, None, confidence=.99, flags=cv2.SOLVEPNP_DLS)
+    Rnew = cv2.Rodrigues(Rvec)
+    tnew = tnew[:, 0]
+    
+    ## Re-triangulate points
+    kpNew, descNew = kp3, des3 
+
+    kpOld,descOld = kp1,des1
+
+    accPts = []
+    for (kpOld, descOld) in [(kp1,des1),(R,t,kp2,des2)]: 
+        matches = bfMatch(descOld, des3)
+
+        imgOldPts, imgNewPts, _, _ = align_matches(kpOld, descOld, kpNew, descNew, matches)
+        F, mask = ransacFundamental(imgOldPts, imgNewPts)
+        mask = mask.flatten().astype(bool)
+        imgOldPts=imgOldPts[mask]
+        imgNewPts=imgNewPts[mask]
+    
+
+        newPts = triangulate(imgOldPts,imgNewPts, K, Rnew,tnew[:,np.newaxis])
+    
+        #Adding newly triangulated points to the collection
+        accPts.append(newPts)
+        
+    pts2ply(np.concatenate(accPts, axis=0), "acc.ply")

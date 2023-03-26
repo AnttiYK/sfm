@@ -1,6 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
 import random        
+import numpy as np
 
 def akaze(img):
     detector = cv2.AKAZE_create(nOctaves=8)
@@ -8,7 +9,10 @@ def akaze(img):
     kp, des = detector.compute(img, kp)
     return kp, des
     
+    
 
+    
+    
 def showFeatures(kps, imgs):
     r = random.randint(0, len(imgs)-1)
     img = imgs[r]
