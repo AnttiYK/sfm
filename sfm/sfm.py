@@ -18,7 +18,6 @@ def main():  # pragma: no cover
     calibration_images = readImages(dir, True)
     ## mtx = camera matrix, dist = distCoeffs
     K, dist = parameters(calibration_images)
-    K, dist = parameters(calibration_images)
     
     ## read images
     dir = "images/100CANON"
@@ -86,6 +85,7 @@ def main():  # pragma: no cover
         mask = mask.flatten().astype(bool)
         imgOldPts=imgOldPts[mask]
         imgNewPts=imgNewPts[mask]
+        
     
 
         newPts = triangulate(imgOldPts,imgNewPts, K, Rnew,tnew[:,np.newaxis])
