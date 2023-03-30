@@ -6,6 +6,7 @@ from camera_calibration import parameters, undistort
 from fundamental import ransacFundamental, epipolar, showEpipolar
 from cameraPose import cameraPose, showCameraPose, disambiguatePose
 from triangulate import triangulate, showTriangulate
+from pnp import ransacPnP
 import cv2
 import numpy as np
 
@@ -62,35 +63,43 @@ def main():  # pragma: no cover
     
     points3D = triangulate(points1[F_mask], points2[F_mask], K, R, t)
     pts2ply(points3D, "results.ply")
+    for i in range(2, len(images)):
+        ## PnP and new camera ragistration
+        kp3, des3 = akaze(images[i])
+        img3D, pts3D = matches2D3D(des1,i1,des2, i2, des3, kp3, F_mask, points3D)
+        print(i)
+        ret, Rvec, tnew, PnP_mask = cv2.solvePnPRansac(pts3D, img3D, K, dist)
+        Rnew = cv2.Rodrigues(Rvec)
+        tnew = tnew[:, 0]
     
-    ## PnP and new camera ragistration
-    kp3, des3 = akaze(images[2])
-    img3D, pts3D = matches2D3D(des1,i1,des2, i2, des3, kp3, F_mask, points3D)
-    
-    ret, Rvec, tnew, PnP_mask = cv2.solvePnPRansac(pts3D[:, np.newaxis], img3D[:, np.newaxis], K, None, confidence=.99, flags=cv2.SOLVEPNP_DLS)
-    Rnew = cv2.Rodrigues(Rvec)
-    tnew = tnew[:, 0]
-    
-    ## Re-triangulate points
-    kpNew, descNew = kp3, des3 
+        #Rnew,tnew =ransacPnP(pts3D,img3D,K)
+        #tnew = tnew[:, 0]
 
-    kpOld,descOld = kp1,des1
+        ## Re-triangulate points
+        kpNew, descNew = kp3, des3
+        if i == 2:
+            kpOld,descOld = kp2,des2
+         
 
-    accPts = []
-    for (kpOld, descOld) in [(kp1,des1),(R,t,kp2,des2)]: 
-        matches = bfMatch(descOld, des3)
+        
 
-        imgOldPts, imgNewPts, _, _ = align_matches(kpOld, descOld, kpNew, descNew, matches)
-        F, mask = ransacFundamental(imgOldPts, imgNewPts)
-        mask = mask.flatten().astype(bool)
-        imgOldPts=imgOldPts[mask]
-        imgNewPts=imgNewPts[mask]
+        accPts = []
+        for (ROld, tOld, kpOld, descOld) in [(np.eye(3),np.zeros((3,1)), kp1,des1),(R,t,kp2,des2)]:  
+            matches = bfMatch(descOld, des3)
+
+            imgOldPts, imgNewPts, _, _ = align_matches(kpOld, descOld, kpNew, descNew, matches)
+            F, mask = ransacFundamental(imgOldPts, imgNewPts)
+            mask = mask.flatten().astype(bool)
+            imgOldPts=imgOldPts[mask]
+            imgNewPts=imgNewPts[mask]
         
     
 
-        newPts = triangulate(imgOldPts,imgNewPts, K, Rnew,tnew[:,np.newaxis])
+            newPts = triangulate(imgOldPts,imgNewPts, K, Rnew,tnew[:,np.newaxis])
     
-        #Adding newly triangulated points to the collection
-        accPts.append(newPts)
+            #Adding newly triangulated points to the collection
+            accPts.append(newPts)
+        kpOld = kpNew
+        descOld = descNew
         
     pts2ply(np.concatenate(accPts, axis=0), "acc.ply")

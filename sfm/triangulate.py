@@ -3,9 +3,10 @@ import cv2
 import matplotlib.pyplot as plt
 from cameraPose import PlotCamera
 
-def triangulate(x1, x2, K, R, t):
-    R_ = np.eye(3)
-    t_ = np.zeros((3,1))
+def triangulate(x1, x2, K, R, t, R_, t_):
+    if R_ == None:
+        R_ = np.eye(3)
+        t_ = np.zeros((3,1))
     
     x1hom = cv2.convertPointsToHomogeneous(x1)[:,0,:]
     x2hom = cv2.convertPointsToHomogeneous(x2)[:,0,:]
