@@ -5,7 +5,7 @@ from feature_matching import bfMatch, align_matches, matches2D3D, plotNewCamera
 from camera_calibration import parameters, undistort
 from fundamental import ransacFundamental, epipolar, showEpipolar
 from cameraPose import cameraPose, showCameraPose, disambiguatePose
-from triangulate import triangulate, showTriangulate
+from triangulate import triangulate, showTriangulate, imgC
 from pnp import ransacPnP
 import cv2
 import numpy as np
@@ -55,6 +55,7 @@ def main():  # pragma: no cover
     R1, R2, t = cameraPose(E)
     #showCameraPose(R1, R2, t)
     ## Triangulate points 
+    imgC()
     points3d = triangulate(points1[F_mask], points2[F_mask], K, R2, t)
     #showTriangulate(R1, R2, t, points1, points2, K, F_mask)
     

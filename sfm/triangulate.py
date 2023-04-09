@@ -2,6 +2,9 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from cameraPose import PlotCamera
+from mpl_toolkits.mplot3d import Axes3D
+import mpl_toolkits.mplot3d.art3d as art3d
+import matplotlib.patches as mpatches
 
 def triangulate(x1, x2, K, R, t, R_, t_):
     if R_ == None:
@@ -44,4 +47,39 @@ def showTriangulate(R1, R2, t, x1, x2, K, mask):
         ax.set_xlim(left=-50,right=50)
         ax.set_ylim(bottom=-50,top=50)
         ax.set_zlim(bottom=-20,top=20)
+    plt.show()
+
+def imgC():
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1, projection='3d')
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+    plt.grid()
+    ## point P
+    plt.plot(7,6,5,marker = 'o', color = 'blue')
+    ## world coordinate origin
+    plt.plot(6, -5, 5, marker = 'x', color = 'red')
+    
+    ## line from world origin to P
+    plt.plot((6,8), (-5,10), (5,5), color = 'red', linestyle = 'dashed')
+    ## camera coordinate origin
+    plt.plot(15, 5.5, 5, marker = 'x', color = 'green')
+    ## line from camera coordinate origin to P
+    plt.plot((15,0), (6,5.5), (5,5), color = 'green', linestyle = 'dashed')
+    ## optical axis
+   
+    plt.plot(10, 5.5, 5, marker = 'o', color = 'black')
+    plt.plot(7, 0, 5, marker = 'o', color = 'black')
+    ## image plane
+    rec1 = plt.Rectangle((3,2), 5, 5, fc=(0,0,1,0.2))
+    ax.add_patch(rec1)
+    art3d.patch_2d_to_3d(rec1, z=10, zdir='x')
+    rec2 = plt.Rectangle((3,2), 5, 5, fc=(0,0,1,0.2))
+    ax.add_patch(rec2)
+    art3d.patch_2d_to_3d(rec2, z=0, zdir='y')
+
+    ax.set_xlim(0,15)
+    ax.set_ylim(-5,10)
+    ax.set_zlim(0,15)
     plt.show()
