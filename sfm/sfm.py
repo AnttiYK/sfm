@@ -55,9 +55,8 @@ def main():  # pragma: no cover
     R1, R2, t = cameraPose(E)
     #showCameraPose(R1, R2, t)
     ## Triangulate points 
-    imgC()
     points3d = triangulate(points1[F_mask], points2[F_mask], K, R2, t)
-    #showTriangulate(R1, R2, t, points1, points2, K, F_mask)
+    showTriangulate(R1, R2, t, points1, points2, K, F_mask)
     
     ## Disambiguate camera pose
     R, t, count = disambiguatePose(points1[F_mask], points2[F_mask], R1, R2, t, K)

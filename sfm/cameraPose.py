@@ -4,9 +4,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import cv2
 
 def triangulate(x1, x2, K, R, t):
-    R_ = np.eye(3)
-    t_ = np.zeros((3,1))
-    
+
     x1hom = cv2.convertPointsToHomogeneous(x1)[:,0,:]
     x2hom = cv2.convertPointsToHomogeneous(x2)[:,0,:]
     
