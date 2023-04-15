@@ -56,7 +56,7 @@ def main():  # pragma: no cover
     #showCameraPose(R1, R2, t)
     ## Triangulate points 
     points3d = triangulate(points1[F_mask], points2[F_mask], K, R2, t)
-    showTriangulate(R1, R2, t, points1, points2, K, F_mask)
+    #showTriangulate(R1, R2, t, points1, points2, K, F_mask)
     
     ## Disambiguate camera pose
     R, t, count = disambiguatePose(points1[F_mask], points2[F_mask], R1, R2, t, K)
@@ -66,12 +66,25 @@ def main():  # pragma: no cover
     for i in range(2, len(images)):
         ## PnP and new camera ragistration
         kp3, des3 = akaze(images[i])
-        img3D, pts3D = matches2D3D(des1,i1,des2, i2, des3, kp3, F_mask, points3D)
-        print(i)
-        ret, Rvec, tnew, PnP_mask = cv2.solvePnPRansac(pts3D, img3D, K, dist)
-        Rnew = cv2.Rodrigues(Rvec)
-        tnew = tnew[:, 0]
+        img2D, pts3D = matches2D3D(des1,i1,des2, i2, des3, kp3, F_mask, points3D)
+
+        #ret, Rvec, tnew, PnP_mask = cv2.solvePnPRansac(pts3D, img2D, K, dist)
+       
+        retval, rvec, tvec = cv2.solvePnP(pts3D, img2D, K, dist, flags=cv2.SOLVEPNP_EPNP)
+        print(tvec)
+        tnew = tvec[:, 0]
+        print(tnew)
+        #print(rvec)
+        [Rnew, j] = cv2.Rodrigues(rvec)
     
+        ii = img2D[0]
+        ii = np.hstack((ii, 1))
+        
+        
+    
+        l =  np.matmul(np.linalg.inv(Rnew), ii.transpose() - tnew)
+        #print(l)
+        #print(i)
         #Rnew,tnew =ransacPnP(pts3D,img3D,K)
         #tnew = tnew[:, 0]
 
