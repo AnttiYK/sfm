@@ -20,7 +20,7 @@ def fundamentalMatrix(x1, x2):
     x1_ = x1.repeat(3, axis= 1)
     x2_ = np.tile(x2, (1, 3))
     
-    A = x1_ * x2_
+    A = np.multiply(x1_ * x2_)
     
     _, _, V = np.linalg.svd(A)
     F = V[-1,:].reshape((3,3), order = 'F')
