@@ -19,10 +19,27 @@ def triangulate(x1, x2, K, R, t):
     
     x1norm = cv2.convertPointsFromHomogeneous(x1norm)[:,0,:]
     x2norm = cv2.convertPointsFromHomogeneous(x2norm)[:,0,:]
+    P1 = np.hstack((R_,t_))
+    P2 = np.hstack((R,t))
+    points3D = np.zeros((3,1))
+
+    for i in range(len(x1)):
+        A = np.zeros((4, 4))
+
+        A[0, :] = x1norm[i][0]*P1[2, :] - P1[0, :]
+        A[1, :] = x1norm[i][1]*P1[2, :] - P1[1, :]
+        A[2, :] = x2norm[i][0]*P2[2, :] - P2[0, :]
+        A[3, :] = x2norm[i][1]*P2[2, :] - P2[1, :]
     
-    points4d = cv2.triangulatePoints(np.eye(3,4), np.hstack((R, t)), x1norm.T, x2norm.T)
-    points3D = cv2.convertPointsFromHomogeneous(points4d.T)[:,0,:]
+        U, S, Vt = np.linalg.svd(A)
+        X_homog = Vt[-1, :]
+        X_homog /= X_homog[3]
+        X = X_homog[:3]
+        X_ = [[X[0]], [X[1]], [X[2]]]
+        points3D = np.concatenate((points3D, X_), axis = 1)
     
+    points3D = cv2.triangulatePoints(P1, P2, x1norm.T, x2norm.T)
+    #print(points3D)
     return points3D
 
 def showTriangulate(R1, R2, t, x1, x2, K, mask):

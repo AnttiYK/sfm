@@ -28,7 +28,7 @@ def parameters(imgs):
         if ret == True:
             objpoints.append(obj_point)
             # refining pixel coordinates for given 2d points.
-            corners2 = cv.cornerSubPix(gray, corners, (25,25),(-1,-1), criteria)
+            corners2 = cv.cornerSubPix(gray, corners, (11,11),(-1,-1), criteria)
          
             imgpoints.append(corners2)
  

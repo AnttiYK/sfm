@@ -37,7 +37,7 @@ def matches2D3D(des1,i1,des2, i2, des3, kp3, mask, points3D):
 def bfMatch(f1, f2):
     matcher = cv.BFMatcher(cv.NORM_HAMMING, crossCheck = True)
     matches = matcher.match(f1,f2)
-    matches = sorted(matches, key = lambda x:x.distance)
+    #matches = sorted(matches, key = lambda x:x.distance)
     return matches
 
 def align_matches(kp1, des1, kp2, des2, matches):

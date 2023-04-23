@@ -15,7 +15,7 @@ def pts2ply(pts,filename='out.ply'):
     f = open(filename,'w')
     f.write('ply\n')
     f.write('format ascii 1.0\n')
-    f.write('element vertex {}\n'.format(pts.shape[0]))
+    f.write('element vertex {}\n'.format(len(pts[0])))
     
     f.write('property float x\n')
     f.write('property float y\n')
@@ -26,7 +26,6 @@ def pts2ply(pts,filename='out.ply'):
     f.write('property uchar blue\n')
     
     f.write('end_header\n')
-    
-    for pt in pts: 
-        f.write('{} {} {} 255 255 255\n'.format(pt[0],pt[1],pt[2]))
+    for i in range(len(pts[0])): 
+        f.write('{} {} {} 255 255 255\n'.format(pts[0][i],pts[1][i],pts[2][i]))
     f.close()
