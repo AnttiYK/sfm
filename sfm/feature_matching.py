@@ -37,20 +37,37 @@ def matches2D3D(des1,i1,des2, i2, des3, kp3, mask, points3D):
 def bfMatch(f1, f2):
     matcher = cv.BFMatcher(cv.NORM_HAMMING, crossCheck = True)
     matches = matcher.match(f1,f2)
-    #matches = sorted(matches, key = lambda x:x.distance)
+    matches = sorted(matches, key = lambda x:x.distance)
     return matches
 
-def align_matches(kp1, des1, kp2, des2, matches):
+def align_matches(kp1, kp2, matches, des):
     i1 = np.array([m.queryIdx for m in matches])
     i2 = np.array([m.trainIdx for m in matches])
+
     ## Filter out non matched keypoints
     kp1_ = (np.array(kp1))[i1]
     kp2_ = (np.array(kp2))[i2]
+    des_ = (np.array(des))[i2]
     ## Coordinates for keypoints
     c1 = np.array([k.pt for k in kp1_])
     c2 = np.array([k.pt for k in kp2_])
     
-    return c1, c2, i1, i2
+    return c1, c2, des_
+
+def align_3D_matches(world_points, img_points, matches, des):
+    i1 = np.array([m.queryIdx for m in matches])
+    i2 = np.array([m.trainIdx for m in matches])
+    ## Filter out non matched keypoints
+    world_points = (np.array(world_points))[i1]
+
+    des_ = (np.array(des))[i1]
+    img_points = (np.array(img_points))[i2]
+    
+    ## Coordinates for keypoints
+    img_points = np.array([k.pt for k in img_points])
+  
+    
+    return world_points, img_points, des_
 
 def showMatches(images, transformations, features, matches):
     firstImageIndex = 3

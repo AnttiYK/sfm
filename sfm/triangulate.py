@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
 import matplotlib.patches as mpatches
 
-def triangulate(x1, x2, K, R, t):
+def triangulate(x1, x2, K, P1, P2):
 
     R_ = np.eye(3)
     t_ = np.zeros((3,1))
@@ -19,8 +19,7 @@ def triangulate(x1, x2, K, R, t):
     
     x1norm = cv2.convertPointsFromHomogeneous(x1norm)[:,0,:]
     x2norm = cv2.convertPointsFromHomogeneous(x2norm)[:,0,:]
-    P1 = np.hstack((R_,t_))
-    P2 = np.hstack((R,t))
+
     points3D = np.zeros((3,1))
 
     for i in range(len(x1)):
@@ -33,13 +32,16 @@ def triangulate(x1, x2, K, R, t):
     
         U, S, Vt = np.linalg.svd(A)
         X_homog = Vt[-1, :]
-        X_homog /= X_homog[3]
-        X = X_homog[:3]
-        X_ = [[X[0]], [X[1]], [X[2]]]
+        #X_homog /= X_homog[:3]
+        X0 = X_homog[0]
+        X1 = X_homog[1]
+        X2 = X_homog[2]
+        #print(X)
+        X_ = [[X0], [X1], [X2]]
         points3D = np.concatenate((points3D, X_), axis = 1)
     
     points3D = cv2.triangulatePoints(P1, P2, x1norm.T, x2norm.T)
-    #print(points3D)
+    
     return points3D
 
 def showTriangulate(R1, R2, t, x1, x2, K, mask):
