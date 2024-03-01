@@ -1,5 +1,31 @@
 import numpy as np
 import cv2
+from tqdm import tqdm
+from utils import ProjectionMatrix
+
+def homogenous(pts):
+    return np.hstack((pts, np.ones((pts.shape[0], 1))))
+
+def linPnP(X,x,K):
+    N = X.shape[0]
+    x_4 = homogenous(X)
+    x_3 = homogenous(x)
+    K_ = np.linalg.inv(K)
+    x_ = K_.dot(x_3.T).T
+    
+
+def get_PnPRansac(K,points2d, points3d, iters, error_t):
+    inliers = 0
+    idx_best = []
+    R_best, t_best = None, None
+    n_rows = points3d.shape[0]
+
+    for i in tqdm(range(0, iters)):
+        rand_idx = np.random.choice(n_rows, size=6)
+        X, x = points3d[rand_idx], points2d[rand_idx]
+
+
+
 
 def ComputeReprojections(X,R,t,K): 
     """

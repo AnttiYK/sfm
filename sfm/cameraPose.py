@@ -3,6 +3,29 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import cv2
 
+def get_camera_pose(E):
+    U, S, V_T = np.linalg.svd(E)
+    W = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
+
+    R = []
+    C = []
+    R.append(np.dot(U, np.dot(W, V_T)))
+    R.append(np.dot(U, np.dot(W, V_T)))
+    R.append(np.dot(U, np.dot(W.T, V_T)))
+    R.append(np.dot(U, np.dot(W.T, V_T)))
+    C.append(U[:, 2])
+    C.append(-U[:, 2])
+    C.append(U[:, 2])
+    C.append(-U[:, 2])
+
+    for i in range(4):
+        if (np.linalg.det(R[i]) < 0):
+            R[i] = -R[i]
+            C[i] = -C[i]
+
+    return R, C
+
+
 def triangulate(x1, x2, K, R, t):
 
     x1hom = cv2.convertPointsToHomogeneous(x1)[:,0,:]
@@ -19,24 +42,31 @@ def triangulate(x1, x2, K, R, t):
     
     return points3D
 
-def disambiguatePose(x1, x2, R1, R2, t, K):
-    sets = [None, None, None, None]
-    sets[0] = (R1, t, triangulate(x1, x2, K, R1, t))
-    sets[1] = (R1, -t, triangulate(x1, x2, K, R1, -t))
-    sets[2] = (R2, t, triangulate(x1, x2, K, R2, t))
-    sets[3] = (R2, -t, triangulate(x1, x2, K, R2, -t))
-    count = -1
-    bestR = None
-    bestT = None
-    for R_, t_, p_ in sets:
-        c1 = p_[:,-1] > 0
-        c2 = (R_.dot(p_.T)+t_).T
-        c2 = c2[:,-1] > 0
-        count_ = np.sum(c1 & c2)
-        if count_ > count:
-            count = count_
-            bestR, bestT = R_, t_
-    return bestR, bestT, count
+def get_pos_depth(points, r, c):
+    n = 0
+    for p in points:
+        p = p.reshape(-1,1)
+        if r.dot(p-c) > 0 and p[2]>0:
+            n+=1
+    return n
+
+def disambiguatePose(r, c, points):
+    best_idx = 0
+    max_pos_depth = 0
+    for i in range(len(r)):
+        R, C = r[i], c[i].reshape(-1, 1)
+        r3 = R[2,:].reshape(1,-1)
+        points_ = points[i]
+        points_ = points_ / points_[:,3].reshape(-1,1)
+        points_=points_[:,0:3]
+        n_pos_depth = get_pos_depth(points_, r3, C)
+        if n_pos_depth > max_pos_depth:
+            best_idx = i
+            max_pos_depth = n_pos_depth
+    R, C, P = r[best_idx], c[best_idx], points[best_idx]
+
+    return R,C,P
+
     
 def cameraPose(E):
     U, _, V = np.linalg.svd(E)

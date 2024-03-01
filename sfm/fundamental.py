@@ -1,6 +1,91 @@
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
+from tqdm import tqdm
+
+def get_e_matrix(K, F):
+    E = K.T.dot(F).dot(K)
+    u,s,v = np.linalg.svd(E)
+    s = [1,1,0]
+    E_ = np.dot(u,np.dot(np.diag(s),v))
+    return E_
+
+def estimate_f_matrix(points_src, points_dst):
+    N = len(points_src)
+    m_src = np.average(points_src, axis=0)
+    m_dst = np.average(points_dst, axis=0)
+    m_src_mean = points_src-m_src.reshape(1,2)
+    m_dst_mean = points_dst-m_dst.reshape(1,2)
+    sum_src = np.sum((m_src_mean)**2, axis=None)
+    sum_dst = np.sum((m_dst_mean)**2, axis=None)
+    s_src = (sum_src/(2*N))**0.5
+    s_src_inv = 1/s_src
+    s_dst = (sum_dst/(2*N))**0.5
+    s_dst_inv = 1/s_dst
+    x = m_src_mean*s_src_inv
+    y = m_dst_mean*s_dst_inv
+    Y = np.ones((N,9))
+    Y = np.ones((N,9))	
+    Y[:,0:2] = x*y[:,0].reshape(N,1)
+    Y[:,2] = y[:,0]
+    Y[:,3:5] = x*y[:,1].reshape(N,1)
+    Y[:,5] = y[:,1]
+    Y[:,6:8] = x
+    _,_,vt = np.linalg.svd(Y,full_matrices=True)
+    F = vt[8,:].reshape(3,3)
+    U, S, Vt = np.linalg.svd(F, full_matrices=True)
+    S[2] = 0
+    Smat = np.diag(S)
+    F = np.dot(U, np.dot( Smat, Vt))
+    T_src = np.zeros((3,3))
+    T_src[0,0] = s_src_inv
+    T_src[1,1] = s_src_inv
+    T_src[2,2] = 1
+    T_src[0,2] = -s_src_inv*m_src[0]
+    T_src[1,2] = -s_src_inv*m_src[1]
+
+    T_dst = np.zeros((3,3))
+    T_dst[0,0] = s_dst_inv
+    T_dst[1,1] = s_dst_inv
+    T_dst[2,2] = 1
+    T_dst[0,2] = -s_dst_inv*m_dst[0]
+    T_dst[1,2] = -s_dst_inv*m_dst[1]
+    F = np.dot( np.transpose( T_dst ), np.dot( F, T_src))
+    return F
+
+def get_f_matrix(points_src, points_dst):
+    N = 1500
+    S = points_dst.shape[0]
+    r = np.random.randint(S,size=(N,8))
+    m_src = np.ones((3,S))
+    m_src[0:2,:]=points_src.T
+    m_dst = np.ones((3,S))
+    m_dst[0:2,:]=points_dst.T
+    count = np.zeros(N)
+    cost = np.zeros(S)
+    t=1e-2
+
+    for i in tqdm(range(N)):
+        #cost_ = np.zeros(8)
+        F = estimate_f_matrix(points_src[r[i,:],:], points_dst[r[i,:],:])
+        for j in range(S):
+            cost[j] = np.dot(np.dot(m_dst[:,j].T,F),m_src[:,j])
+        inliers = np.absolute(cost)<t
+        count[i]=np.sum(inliers+np.zeros(S), axis=None)
+
+    index = np.argsort(-count)
+    best = index[0]
+    best_F = estimate_f_matrix(points_src[r[best,:],:], points_dst[r[best,:],:])
+    for i in range(S):
+        cost[i]=np.dot(np.dot(m_dst[:,i].T, best_F), m_src[:,i])
+    confidence = np.absolute(cost)
+    index = np.argsort(confidence)
+    inliers_src = points_src[index]
+    inliers_dst = points_dst[index]
+    inliers_src = inliers_src[:100,:]
+    inliers_dst = inliers_dst[:100,:] 
+
+    return best_F, inliers_src, inliers_dst     
 
 def epipolar(x, i, F):
     if x.shape[1] == 2:

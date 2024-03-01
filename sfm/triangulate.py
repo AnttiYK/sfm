@@ -5,6 +5,88 @@ from cameraPose import PlotCamera
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
 import matplotlib.patches as mpatches
+from tqdm import tqdm
+import scipy.optimize as optimize
+
+def get_projection_matrix(R, C, K):
+    C = np.reshape(C, (3, 1))        
+    I = np.identity(3)
+    P = np.dot(K, np.dot(R, np.hstack((I, -C))))
+    return P
+
+def get_loss(x, pts_src, pts_dst, P_src, P_dst):
+    p1_src, p2_src, p3_src = P_src
+    p1_src, p2_src, p3_src = p1_src.reshape(1,-1), p2_src.reshape(1,-1),p3_src.reshape(1,-1)
+
+    p1_dst, p2_dst, p3_dst = P_dst
+    p1_dst, p2_dst, p3_dst = p1_dst.reshape(1,-1), p2_dst.reshape(1,-1), p3_dst.reshape(1,-1)
+
+    u_src,v_src = pts_src[0], pts_src[1]
+    u_src_ = np.divide(p1_src.dot(x), p3_src.dot(x))
+    v_src_ = np.divide(p2_src.dot(x), p3_src.dot(x))
+    E_src = np.square(v_src-v_src_) + np.square(u_src-u_src_)
+
+    u_dst,v_dst = pts_dst[0], pts_dst[1]
+    u_dst_ = np.divide(p1_dst.dot(x), p3_dst.dot(x))
+    v_dst_ = np.divide(p2_dst.dot(x), p3_dst.dot(x))
+    E_dst = np.square(v_dst-v_dst_) + np.square(u_dst-u_dst_)
+
+    err = E_src + E_dst
+    return err.squeeze()
+
+
+
+
+def get_nonlinear_triangulate(K, C_src, R_src, R_dst, C_dst, points_src, points_dst, points):
+    P_src = get_projection_matrix(R_src, C_src, K)
+    P_dst = get_projection_matrix(R_dst, C_dst, K)
+    points_ = []
+    for i in tqdm(range(len(points))):
+        opt = optimize.least_squares(fun=get_loss, x0 = points[i], method="trf", args=[points_src[i], points_dst[i], P_src, P_dst])
+        X = opt.x
+        points_.append(X)
+    return np.array(points_)
+
+
+
+
+def get_triangulate(K, C_src, R_src, C_dst, R_dst, points_src, points_dst):
+    I = np.identity(3)
+    C_src = np.reshape(C_src, (3,1))
+    C_dst = np.reshape(C_dst, (3,1))
+
+    P_src = np.dot(K, np.dot(R_src, np.hstack((I, -C_src))))
+    P_dst = np.dot(K, np.dot(R_dst, np.hstack((I, -C_dst))))
+
+    p1_src_t = P_src[0,:].reshape(1,4)
+    p2_src_t = P_src[1,:].reshape(1,4)
+    p3_src_t = P_src[2,:].reshape(1,4)
+
+    p1_dst_t = P_dst[0,:].reshape(1,4)
+    p2_dst_t = P_dst[1,:].reshape(1,4)
+    p3_dst_t = P_dst[2,:].reshape(1,4)
+
+    points = []
+
+    for i in range(points_src.shape[0]):
+        x_src = points_src[i, 0]
+        y_src = points_src[i, 1]
+        x_dst = points_dst[i, 0]
+        y_dst = points_dst[i, 1]
+
+        A = []
+        A.append((y_src*p3_src_t)-p2_src_t)
+        A.append(p1_src_t-(x_src*p3_src_t))
+        A.append((y_dst*p3_dst_t)-p2_dst_t)
+        A.append(p1_dst_t-(x_dst-p3_dst_t))
+
+        A = np.array(A).reshape(4,4)
+
+        _,_,vt = np.linalg.svd(A)
+        v = vt.T
+        v = v[:,-1]
+        points.append(v)
+    return np.array(points)
 
 def triangulate(x1, x2, K, P1, P2):
 
